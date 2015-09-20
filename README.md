@@ -1,4 +1,6 @@
 # Project
-Test Project
+OOP Projekt
 
-This is just a git-exploring project
+Dies ist ein Schulprojekt, in welchem ein LineRider ähnliches Programm mit C# entwickelt wird.
+
+Der Schwerpunkt soll dabei auf dem Objekt-Orientierten Ansatz sowie der Physik liegen.
