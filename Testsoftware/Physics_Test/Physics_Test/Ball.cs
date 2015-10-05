@@ -35,7 +35,7 @@ namespace Physics_Test
 
         public void Draw(Graphics g)
         {
-            g.FillEllipse(Picture, Position.X - Size / 2, Position.Y - Size / 2, Size, Size);
+            g.FillEllipse(Picture, Position.X + Size / 2, Position.Y + Size / 2, Size, Size);
         }
     }
 }
