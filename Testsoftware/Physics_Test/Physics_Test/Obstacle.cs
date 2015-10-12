@@ -88,7 +88,7 @@ namespace Physics_Test
         public void calculateCollision(Ball Object)
         {
             // prüfen ob kollision
-            if (isColliding(Object.Position, Object.Size))
+            if (isColliding(Object.Position, Object.Size/2))
             {
                 // originalposition behalten
                 Point Original = Object.Position;
