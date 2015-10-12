@@ -6,3 +6,11 @@ C:\Users\Alain\Documents\Visual Studio 2013\Projects\Physics_Test\Physics_Test\b
 C:\Users\Alain\Documents\Visual Studio 2013\Projects\Physics_Test\Physics_Test\bin\Debug\Physics_Test.pdb
 C:\Users\Alain\Documents\Visual Studio 2013\Projects\Physics_Test\Physics_Test\obj\Debug\Physics_Test.exe
 C:\Users\Alain\Documents\Visual Studio 2013\Projects\Physics_Test\Physics_Test\obj\Debug\Physics_Test.pdb
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.exe
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.pdb
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\bin\Debug\Physics_Test.exe
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\bin\Debug\Physics_Test.pdb
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.csprojResolveAssemblyReference.cache
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.GameWindow.resources
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.Properties.Resources.resources
+C:\Users\Alain\Documents\GitHub\Project\Testsoftware\Physics_Test\Physics_Test\obj\Debug\Physics_Test.csproj.GenerateResource.Cache

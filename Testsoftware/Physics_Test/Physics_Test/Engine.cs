@@ -21,6 +21,10 @@ namespace Physics_Test
         private Point ArrowEnd;
         private bool ShowArrow;
 
+        private Point TestStart;
+        private Point TestEnd;
+        private Point TestCut;
+
         public Engine(Graphics g)
         {
             g_Handle = g;
@@ -35,10 +39,12 @@ namespace Physics_Test
             ShowArrow = false;
 
             Lines = new List<Obstacle>();
-            Lines.Add(new Obstacle(new Point(1000, 800), new Point(1500, 800)));
-            Lines.Add(new Obstacle(new Point(500, 300), new Point(500, 1000)));
-            Lines.Add(new Obstacle(new Point(700, 700), new Point(900, 900)));
-            Lines.Add(new Obstacle(new Point(100, 100), new Point(1000, 700)));
+            Lines.Add(new Obstacle(new Point(700, 700), new Point(900, 700)));
+            //Lines.Add(new Obstacle(new Point(700, 700), new Point(700, 900)));
+
+            TestStart = new Point();
+            TestEnd = new Point();
+            TestCut = new Point();
         }
 
         public void start()
@@ -71,6 +77,8 @@ namespace Physics_Test
             Point Acceleration = new Point(0, 1); // 10 px down
             Point No_Acceleration = new Point(-Acceleration.X * 2, -Acceleration.Y * 2);
             Pen Arrow = new Pen(new SolidBrush(Color.Green), 2f);
+            Pen TestPoints = new Pen(new SolidBrush(Color.Red), 1f);
+            Pen TestCutts = new Pen(new SolidBrush(Color.Lime), 1f);
 
             Bitmap RenderedFrame = new Bitmap(Paint_Area.Width, Paint_Area.Height);
             Graphics f_Handle = Graphics.FromImage(RenderedFrame);
@@ -98,6 +106,14 @@ namespace Physics_Test
                 {
                     f_Handle.DrawLine(Arrow, ArrowStart, ArrowEnd);
                 }
+
+                // testpoint
+                f_Handle.DrawLine(TestPoints, TestStart.X - 10, TestStart.Y, TestStart.X + 10, TestStart.Y);
+                f_Handle.DrawLine(TestPoints, TestStart.X, TestStart.Y - 10, TestStart.X, TestStart.Y + 10);
+                f_Handle.DrawLine(TestPoints, TestEnd.X - 10, TestEnd.Y, TestEnd.X + 10, TestEnd.Y);
+                f_Handle.DrawLine(TestPoints, TestEnd.X, TestEnd.Y - 10, TestEnd.X, TestEnd.Y + 10);
+                f_Handle.DrawLine(TestCutts, TestCut.X - 10, TestCut.Y, TestCut.X + 10, TestCut.Y);
+                f_Handle.DrawLine(TestCutts, TestCut.X, TestCut.Y - 10, TestCut.X, TestCut.Y + 10);
 
                 // draw on screen
                 g_Handle.DrawImage(RenderedFrame, 0, 0,800,600);
@@ -187,6 +203,12 @@ namespace Physics_Test
             ShowArrow = false;
             ArrowEnd.X = ArrowStart.X;
             ArrowEnd.Y = ArrowStart.Y;
+        }
+
+        internal void MoveStartPos(Point point)
+        {
+            TestStart = new Point(point.X * 2, point.Y * 2);
+            TestCut = Lines[0].calculateEndPoint(TestStart, ref TestEnd);
         }
     }
 }

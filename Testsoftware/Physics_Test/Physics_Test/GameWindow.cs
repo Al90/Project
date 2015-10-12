@@ -47,7 +47,7 @@ namespace Physics_Test
                 {
                     // save last creation
                     LastCreation = Environment.TickCount;
-
+                    
                     // create ball
                     if (MyEngine != null)
                     {
@@ -56,6 +56,10 @@ namespace Physics_Test
                 }
 
                 MyEngine.MoveArrow(PointToClient(MousePosition));
+            }
+            if (MyEngine != null)
+            {
+                MyEngine.MoveStartPos(PointToClient(MousePosition));
             }
         }
 

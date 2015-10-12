@@ -90,28 +90,95 @@ namespace Physics_Test
             // prüfen ob kollision
             if (isColliding(Object.Position, Object.Size))
             {
+                // originalposition behalten
+                Point Original = Object.Position;
 
-                // endposition rechnen
-                double Scalar_Product = (Object.Movement.X * Vector.X) + (Object.Movement.Y * Vector.Y);
-                double Lenght_Object = Math.Sqrt(Object.Movement.X * Object.Movement.X + Object.Movement.Y * Object.Movement.Y);
-                double Length_Obstacle = Math.Sqrt(Vector.X * Vector.X + Vector.Y * Vector.Y);
-                double Angle = Math.Acos(Scalar_Product / (Lenght_Object * Length_Obstacle));
-                Point End_Position = new Point();
-                // check scalar product
-                if (Scalar_Product == 0)
+                // ball zurückplatzieren (aktuelle position kollidiert)
+                Object.MoveBack();
+
+                // länge rechnen
+                double Length = Math.Sqrt(Object.Movement.X * Object.Movement.X + Object.Movement.Y * Object.Movement.Y);
+
+                // geradenwinkel rechnen
+                double Obs_Angle = 0;
+                if(Vector.Y != 0)
                 {
-                    // change movement direction
-                    End_Position = new Point((int)(-Object.Movement.X * n), (int)(-Object.Movement.Y * n));
+                    if(Vector.X != 0)
+                    {
+                        Obs_Angle = Math.Atan(Math.Abs(Vector.X) / Math.Abs(Vector.Y));
+                    }
+                    else
+                    {
+                        Obs_Angle = Math.PI / 2;
+                    }
+                }
+
+                // endposition
+                Object.Position.X = (int)(Original.X + Length * Math.Cos(Math.PI - Obs_Angle));
+                Object.Position.Y = (int)(Original.Y + Length * Math.Sin(Math.PI - Obs_Angle));
+
+                // umkehrwinkel
+                double Ret_Angle = 0;
+                if(Object.Movement.Y != 0)
+                {
+                    Ret_Angle = 2 * Math.PI - 2 * Obs_Angle - Math.Atan(Math.Abs(Object.Movement.X) / Math.Abs(Object.Movement.Y));
                 }
                 else
                 {
-                    End_Position = new Point((int)(Lenght_Object * Math.Cos(Angle) * n), (int)(Lenght_Object * Math.Sin(Angle) * n));
+                    Ret_Angle = 2 * Math.PI - 2 * Obs_Angle;
                 }
-                // bewegung umkehren
-                Object.Movement = End_Position;
-                // neue position rechnen
-                Object.Move();
+
+                // umkehrbewegung
+                Object.Movement.X = (int)(Length * Math.Cos(Ret_Angle));
+                Object.Movement.Y = (int)(Length * Math.Sin(Ret_Angle));
             }
+        }
+
+        public Point calculateEndPoint(Point Start, ref Point End)
+        {
+            // schnittpunkt errechnen (linienmite)
+            Point CutPoint = new Point(this.Start.X + this.Vector.X / 2, this.Start.Y + this.Vector.Y / 2);
+
+            // vektor rechnen
+            Point Vector = new Point(CutPoint.X - Start.X, CutPoint.Y - Start.Y);
+
+            // länge rechnen
+            double Length = Math.Sqrt(Vector.X * Vector.X + Vector.Y * Vector.Y);
+
+            // linienwinkel rechnen
+            double Obs_Angle = 0;
+            if (this.Vector.Y == 0)
+            {
+                // keine bewegung in y richtung, winkel ist 0
+            }
+            else
+            {
+                Obs_Angle = Math.Atan(this.Vector.X / this.Vector.Y);
+            }
+
+            // kollisionsgeradenwinkel rechnen
+            double Cos_Angle = 0;
+            if (Vector.Y == 0)
+            {
+                // keine bewegung in y richtung, winkel ist 0
+            }
+            else
+            {
+                Cos_Angle = Math.Atan(Math.Abs(Vector.X) / Math.Abs(Vector.Y));
+            }
+
+            // halbe kollisionslänge rechnen
+            double Col_Half = 0;
+
+            Col_Half = Length * Math.Cos(Obs_Angle - Cos_Angle);
+
+            // bewegung in x
+            End.X = Start.X + (int)(2 * Col_Half * Math.Cos(Obs_Angle));
+
+            // bewegung in y
+            End.Y = Start.Y + (int)(2 * Col_Half * Math.Sin(Obs_Angle));
+
+            return CutPoint;
         }
 
         public void Draw(Graphics g)

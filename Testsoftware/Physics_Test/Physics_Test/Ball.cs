@@ -26,6 +26,12 @@ namespace Physics_Test
             Position.Y += Movement.Y;
         }
 
+        public void MoveBack()
+        {
+            Position.X -= Movement.X;
+            Position.Y -= Movement.Y;
+        }
+
         public void Move(Point Acceleration)
         {
             Movement.X += Acceleration.X;
