@@ -33,13 +33,16 @@
             // 
             // pnlEngine
             // 
+            this.pnlEngine.Cursor = System.Windows.Forms.Cursors.Default;
             this.pnlEngine.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlEngine.Location = new System.Drawing.Point(0, 0);
             this.pnlEngine.Name = "pnlEngine";
             this.pnlEngine.Size = new System.Drawing.Size(784, 561);
             this.pnlEngine.TabIndex = 0;
             this.pnlEngine.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlEngine_Paint);
+            this.pnlEngine.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseDown);
             this.pnlEngine.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseMove);
+            this.pnlEngine.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseUp);
             // 
             // Hauptfenster
             // 

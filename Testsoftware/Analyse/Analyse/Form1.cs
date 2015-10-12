@@ -23,6 +23,7 @@ namespace Analyse
         public Hauptfenster()
         {
             InitializeComponent();
+            Cursor.Hide();
         }
 
         /// <summary>
@@ -55,7 +56,28 @@ namespace Analyse
         {
             if (engine != null) // Prüfen ob Engine vorhanden ist
             {
-                engine.Cursor = e.Location; // Mausposition an ENgine übergeben
+                engine.Cursor = new Point(e.Location.X, 600 - e.Location.Y); // Mausposition an Engine übergeben
+                if(e.Button == System.Windows.Forms.MouseButtons.Left)
+                {
+                    engine.Line_end = engine.Cursor;
+                }
+            }
+        }
+
+        private void pnlEngine_MouseDown(object sender, MouseEventArgs e)
+        {
+            if ((engine != null) && (e.Button == System.Windows.Forms.MouseButtons.Left)) // Prüfen ob Engine vorhanden ist
+            {
+                engine.Line_start = new Point(e.Location.X, 600 - e.Location.Y); // Mausposition an Engine übergeben
+                engine.Line_end = engine.Line_start;
+            }
+        }
+
+        private void pnlEngine_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((engine != null) && (e.Button == System.Windows.Forms.MouseButtons.Left)) // Prüfen ob Engine vorhanden ist
+            {
+                engine.Line_end = new Point(e.Location.X, 600 - e.Location.Y); // Mausposition an Engine übergeben
             }
         }
     }
