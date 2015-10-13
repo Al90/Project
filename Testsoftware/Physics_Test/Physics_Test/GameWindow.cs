@@ -72,5 +72,15 @@ namespace Physics_Test
         {
             MyEngine.EndArrow();
         }
+
+        private void pnlPlayground_MouseEnter(object sender, EventArgs e)
+        {
+            Cursor.Hide();
+        }
+
+        private void pnlPlayground_MouseLeave(object sender, EventArgs e)
+        {
+            Cursor.Show();
+        }
     }
 }

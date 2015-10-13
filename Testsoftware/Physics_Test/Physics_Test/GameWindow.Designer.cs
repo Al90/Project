@@ -40,6 +40,8 @@
             this.pnlPlayground.Click += new System.EventHandler(this.pnlPlayground_Click);
             this.pnlPlayground.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlPlayground_Paint);
             this.pnlPlayground.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlPlayground_MouseDown);
+            this.pnlPlayground.MouseEnter += new System.EventHandler(this.pnlPlayground_MouseEnter);
+            this.pnlPlayground.MouseLeave += new System.EventHandler(this.pnlPlayground_MouseLeave);
             this.pnlPlayground.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlPlayground_MouseMove);
             this.pnlPlayground.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlPlayground_MouseUp);
             // 
