@@ -158,17 +158,43 @@ namespace Analyse
             double x = line_end.X - line_start.X;
             double y = line_end.Y - line_start.Y;
             double l = Math.Sqrt(x * x + y * y);
-            double alpha_r = l == 0 ? 0 : Math.Asin(y / l);
-            alpha = - alpha_r / (2 * Math.PI) * 360;
 
-            // Fallunterscheidung
-            if(x < 0)
+            // Länge auf Null prüfen
+            if (l != 0)
             {
-                alpha -= 90;
+                // 1. Quadrant
+                if ((x >= 0) && (y >= 0))
+                {
+                    alpha = Math.Acos(x / l) / Math.PI * 180f;
+                }
+
+                // 2. Quadrant
+                if ((x < 0) && (y > 0))
+                {
+                    alpha = 180f - Math.Acos(-x / l) / Math.PI * 180f; // Spiegeln
+                }
+
+                // 3. Quadrant
+                if ((x < 0) && (y < 0))
+                {
+                    alpha = 180f + Math.Acos(-x / l) / Math.PI * 180f;
+                }
+
+                // 3. Quadrant
+                if ((x > 0) && (y < 0))
+                {
+                    alpha = 360f - Math.Acos(x / l) / Math.PI * 180f;
+                }
+            }
+            else
+            {
+                alpha = 0;
             }
 
+
             // Alpha zeichnen
-            f_handle.DrawArc(pen_line, Offset.X + line_start.X - 15, Offset.Y - line_start.Y - 15, 30f, 30f, 0f, (float)alpha);
+            f_handle.DrawArc(pen_line, Offset.X + line_start.X - 15, Offset.Y - line_start.Y - 15, 30f, 30f, 0f, -(float)alpha);
+            f_handle.DrawString(Convert.ToString(alpha), fps_font, fps_brush, 0, 20);
         }
     }
 }

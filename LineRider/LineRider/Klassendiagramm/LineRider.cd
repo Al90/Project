@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="LineRider.Line">
+    <Position X="0.5" Y="1.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAACAAAgAAAAAAAABAAAAAAAAABEAAAAAAAAA=</HashCode>
+      <FileName>Objekte\Line.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LineRider.Player">
+    <Position X="7.25" Y="1.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAggAgAAAAAAABAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Objekte\Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LineRider.Engine">
+    <Position X="11.25" Y="1.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAABAICAAAAAAAAAAAAAAAAAEAAKABAMBAAAAAA=</HashCode>
+      <FileName>Engine\Engine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="LineRider.EngineStates">
+    <Position X="5.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>EngineStates.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
