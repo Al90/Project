@@ -1,28 +1,66 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
   <Class Name="LineRider.Line">
-    <Position X="0.5" Y="1.5" Width="3.5" />
+    <Position X="5.5" Y="5.75" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AAIAAAAAACAAAgAAAAAAAABAAAAAAAAABEAAAAAAAAA=</HashCode>
       <FileName>Objekte\Line.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="LineRider.Player">
-    <Position X="7.25" Y="1.5" Width="3.5" />
+    <Position X="1.25" Y="5.75" Width="3.5" />
     <TypeIdentifier>
       <HashCode>ABAAAAAAAAAAggAgAAAAAAABAAAAAAAAAEAAAAAAAAA=</HashCode>
       <FileName>Objekte\Player.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="LineRider.Engine">
-    <Position X="11.25" Y="1.5" Width="2.5" />
+    <Position X="4.75" Y="0.5" Width="3.25" />
+    <AssociationLine Name="GameButtons" Type="LineRider.GameButton" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.75" Y="5.391" />
+        <Point X="7.75" Y="5.496" />
+        <Point X="10.5" Y="5.496" />
+      </Path>
+    </AssociationLine>
     <TypeIdentifier>
-      <HashCode>CAAAAAABAICAAAAAAAAAAAAAAAAAEAAKABAMBAAAAAA=</HashCode>
+      <HashCode>AAAggIABACCAAAAAAAAAAAAAQAAIAAAKpBAEBQgAgAE=</HashCode>
       <FileName>Engine\Engine.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="Rider" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Field Name="Lines" />
+      <Field Name="GameButtons" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LineRider.GameButton">
+    <Position X="10.5" Y="5.25" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgoAgAAAAAAAAAAAAADAAAQAAQAAAAgI=</HashCode>
+      <FileName>Objekte\GameButton.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LineRider.UI_Message">
+    <Position X="10.25" Y="1.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="LineRider.UI_Message.Clicktype">
+        <TypeIdentifier>
+          <NewMemberFileName>Objekte\UI_Message.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Objekte\UI_Message.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Enum Name="LineRider.EngineStates">
-    <Position X="5.25" Y="1.5" Width="1.5" />
+    <Position X="12.25" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAgIAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>EngineStates.cs</FileName>

@@ -1,6 +1,6 @@
 ﻿namespace LineRider
 {
-    partial class Form1
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -28,20 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.pnlEngine = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
-            // Form1
+            // pnlEngine
+            // 
+            this.pnlEngine.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlEngine.Location = new System.Drawing.Point(0, 0);
+            this.pnlEngine.Name = "pnlEngine";
+            this.pnlEngine.Size = new System.Drawing.Size(790, 573);
+            this.pnlEngine.TabIndex = 0;
+            this.pnlEngine.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlEngine_Paint);
+            this.pnlEngine.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseMove);
+            // 
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(330, 339);
-            this.Name = "Form1";
+            this.ClientSize = new System.Drawing.Size(790, 573);
+            this.Controls.Add(this.pnlEngine);
+            this.Name = "MainWindow";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.Panel pnlEngine;
     }
 }
 

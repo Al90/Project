@@ -33,6 +33,52 @@ namespace LineRider
         /// Spieldauer
         /// </summary>
         private DateTime Playtime;
+        /// <summary>
+        /// Alle Buttons
+        /// </summary>
+        private List<GameButton> GameButtons;
+        /// <summary>
+        /// Ursprung
+        /// </summary>
+        private Point Origin;
+        /// <summary>
+        /// Gerendertes Frame
+        /// </summary>
+        private Bitmap Frame;
+        /// <summary>
+        /// Nachrichtenqueue (Postfach) für Benutzereingaben
+        /// </summary>
+        private Queue<UI_Message> Messages;
+
+        private GameButton Play;
+        private GameButton Pause;
+        private GameButton Save;
+        private GameButton Load;
+        private Point Offset;
+
+        /// <summary>
+        /// Konstruktor
+        /// </summary>
+        public Engine()
+        {
+            Lines = new List<Line>();
+            Rider = new Player();
+            Acceleration = 1.0;
+            Playtime = new DateTime();
+            GameButtons = new List<GameButton>();
+            Origin = new Point();
+            Messages = new Queue<UI_Message>();
+            Offset = new Point(0, 600);
+            int Size = 40;
+            Play = new GameButton(new Point((int)(800 / 2 - (2 * Size + 1.5 * 10)), 10), Size, true, global::LineRider.Properties.Resources.Button_Play_icon);
+            Pause = new GameButton(new Point((int)(800 / 2 - (1 * Size + 0.5 * 10)), 10), Size, true, global::LineRider.Properties.Resources.Button_Pause_icon);
+            Save = new GameButton(new Point((int)(800 / 2 + (0.5 * 10)), 10), Size, true, global::LineRider.Properties.Resources.Save_icon);
+            Load = new GameButton(new Point((int)(800 / 2 + (1 * Size + 1.5 * 10)), 10), Size, true, global::LineRider.Properties.Resources.Open_Folder_icon);
+            GameButtons.Add(Play);
+            GameButtons.Add(Pause);
+            GameButtons.Add(Save);
+            GameButtons.Add(Load);
+        }
 
         /// <summary>
         /// Globaler Spielzustand
@@ -49,39 +95,67 @@ namespace LineRider
         }
 
         /// <summary>
-        /// Linker Mausklick (Linke Maustaste gedrückt)
+        /// Grafik berechnen
         /// </summary>
-        /// <param name="Position">Position des Zeigers im Frame</param>
-        public void Leftclick(Point Position)
+        /// <param name="obj">Optionales Threadobjekt</param>
+        private void RenderGraphics(object obj)
         {
-            throw new System.NotImplementedException();
+            Frame = new Bitmap(800, 600);
+            Graphics f_handle = Graphics.FromImage(Frame);
+            Pause.Clicked = true;
+
+
+            while(true)
+            {
+                // Berechnungen anstellen
+                // Hintergrund zeichnen
+                f_handle.Clear(Color.Orange);
+
+                // Linien zeichnen
+                Lines.ForEach(x=>x.Draw(f_handle, Offset, Origin));
+
+                // Spieler zeichnen
+                Rider.Draw(f_handle, Offset, Origin);
+
+                // Spielzeitzähler 
+                // Menu
+                GameButtons.ForEach(x => x.Draw(f_handle));
+
+                // Frame zeichnen
+                g.DrawImage(Frame, 0, 0);
+                
+            }
         }
 
         /// <summary>
-        /// Rechter Mausklick (Rechte Maustaste gedrückt)
+        /// Engine anhalten
         /// </summary>
-        /// <param name="Position">Position des Zeigers im Frame</param>
-        public void Rightclick(Point Position)
+        public void Stop()
         {
-            throw new System.NotImplementedException();
+            if ((Render != null) && (Render.IsAlive == true))
+            {
+                Render.Abort();
+            }
         }
 
         /// <summary>
-        /// Loslassen der Maustaste
+        /// Nachricht in Queue legen
         /// </summary>
-        /// <param name="Position">Position des Zeigers im Frame</param>
-        public void Releaseclick(Point Position)
+        /// <param name="Message">Abzulegende Nachricht</param>
+        public void PlaceMessage(UI_Message Message)
         {
-            throw new System.NotImplementedException();
+            
         }
 
-        /// <summary>
-        /// Bewegen der gedrückten Mauscursor
-        /// </summary>
-        /// <param name="Position">Position des Zeigers im Frame</param>
-        public void Move(Point Position)
+        public void Start(Graphics graphics)
         {
-            throw new System.NotImplementedException();
+            Stop();
+            g = graphics;
+            Render = new Thread(RenderGraphics);
+            Render.Name = "EngineRender";
+            Render.Start();
+
+
         }
     }
 }

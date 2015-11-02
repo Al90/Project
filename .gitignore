@@ -188,3 +188,5 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 *.suo
+Testsoftware/Physics_Test/Physics_Test.v12.suo
+Testsoftware/Physics_Test/Physics_Test/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache

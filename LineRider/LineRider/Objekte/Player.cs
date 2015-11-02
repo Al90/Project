@@ -37,7 +37,7 @@ namespace LineRider
         /// <param name="Origin">Koordinatennullpunkt</param>
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }
