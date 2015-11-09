@@ -38,8 +38,13 @@ namespace LineRider
             Engine.Start(pnlEngine.CreateGraphics());
         }
 
+        /// <summary>
+        /// Bei Überfahrer des Panels mit der Maus wird eine Nachricht erzeugt
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void pnlEngine_MouseMove(object sender, MouseEventArgs e)
-        {
+        {   
             UI_Message Message = new UI_Message();
             Message.Position = e.Location;
             Message.Type = UI_Message.Clicktype.Move;
@@ -52,6 +57,26 @@ namespace LineRider
             {
                 Engine.Stop();
             }
+        }
+
+        private void pnlEngine_MouseDown(object sender, MouseEventArgs e)
+        {
+            if(e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                UI_Message Message = new UI_Message();
+                Message.Position = e.Location;
+                Message.Type = UI_Message.Clicktype.Left;
+                Engine.PlaceMessage(Message);
+            }
+
+        }
+
+        private void pnlEngine_MouseUp(object sender, MouseEventArgs e)
+        {
+            UI_Message Message = new UI_Message();
+            Message.Position = e.Location;
+            Message.Type = UI_Message.Clicktype.Released;
+            Engine.PlaceMessage(Message);
         }
     }
 }

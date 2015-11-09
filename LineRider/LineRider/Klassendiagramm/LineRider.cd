@@ -3,7 +3,7 @@
   <Class Name="LineRider.Line">
     <Position X="5.5" Y="5.75" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAIAAAAAACAAAgAAAAAAAABAAAAAAAAABEAAAAAAAAA=</HashCode>
+      <HashCode>AAIAAAAAACAAAgAAAAAAAABAACAAAAAABEAAAAAAAAA=</HashCode>
       <FileName>Objekte\Line.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -18,7 +18,7 @@
     <Position X="4.75" Y="0.5" Width="3.25" />
     <AssociationLine Name="GameButtons" Type="LineRider.GameButton" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="7.75" Y="5.391" />
+        <Point X="7.75" Y="5.132" />
         <Point X="7.75" Y="5.496" />
         <Point X="10.5" Y="5.496" />
       </Path>
@@ -38,7 +38,7 @@
   <Class Name="LineRider.GameButton">
     <Position X="10.5" Y="5.25" Width="4.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAgoAgAAAAAAAAAAAAADAAAQAAQAAAAgI=</HashCode>
+      <HashCode>AAAAAAAAAAAAgoAgAAAAAAAAAACAADAAAAAAQAAAAAI=</HashCode>
       <FileName>Objekte\GameButton.cs</FileName>
     </TypeIdentifier>
   </Class>

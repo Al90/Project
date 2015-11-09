@@ -55,6 +55,10 @@ namespace LineRider
         private GameButton Save;
         private GameButton Load;
         private Point Offset;
+        /// <summary>
+        /// Globaler Spielzustand
+        /// </summary>
+        private EngineStates State;
 
         /// <summary>
         /// Konstruktor
@@ -78,21 +82,10 @@ namespace LineRider
             GameButtons.Add(Pause);
             GameButtons.Add(Save);
             GameButtons.Add(Load);
+            State = EngineStates.Editor;
         }
 
-        /// <summary>
-        /// Globaler Spielzustand
-        /// </summary>
-        public EngineStates State
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
+
 
         /// <summary>
         /// Grafik berechnen
@@ -103,16 +96,64 @@ namespace LineRider
             Frame = new Bitmap(800, 600);
             Graphics f_handle = Graphics.FromImage(Frame);
             Pause.Clicked = true;
-
+            bool flag_linestart = false;
+            bool flag_lineend = false;
+            Line Editorline = new Line();
 
             while(true)
             {
+                // Spielzustand
+                switch(State)
+                {
+                    default:
+                    case EngineStates.Editor:
+                        Load.Enabled = true;
+                        Save.Enabled = true;
+                        Pause.Clicked = true;
+
+                        if(flag_lineend)
+                        {
+                            Lines.Add(Editorline);
+                            Editorline = new Line();
+                            flag_lineend = false;
+                            flag_linestart = false;
+
+                        }
+                        break;
+                    
+                    case EngineStates.Load:
+                        Load.Enabled = true;
+                        Save.Enabled = true;
+                        Load.Clicked = true;
+                        break;
+
+                    case EngineStates.Run:
+                        Load.Enabled = false;
+                        Save.Enabled = false;
+                        Play.Clicked = true;
+                        break;
+
+                    case EngineStates.Save:
+                        Load.Enabled = true;
+                        Save.Enabled = true;
+                        Save.Clicked = true;
+                        break;
+                }
+
+
+
                 // Berechnungen anstellen
                 // Hintergrund zeichnen
                 f_handle.Clear(Color.Orange);
 
                 // Linien zeichnen
                 Lines.ForEach(x=>x.Draw(f_handle, Offset, Origin));
+
+                // Editorlinie zeichnen
+                if(flag_linestart)
+                {
+                    Editorline.Draw(f_handle, Offset, Origin);
+                }
 
                 // Spieler zeichnen
                 Rider.Draw(f_handle, Offset, Origin);
@@ -123,7 +164,69 @@ namespace LineRider
 
                 // Frame zeichnen
                 g.DrawImage(Frame, 0, 0);
-                
+
+                // Nachrichtenpostfach abarbeiten
+                if (Messages.Count > 0) // Anzahl der Nachrichten wird gezählt
+                {
+                    // Nachricht aus Postfach holen
+                    UI_Message Message = Messages.Dequeue();
+                    // Schauen, welcher Button geklickt wurde
+                    GameButtons.ForEach(x => x.Handle_UI(Message));
+                    if(Play.Clicked)
+                    {
+                        State = EngineStates.Run;
+                    }
+                    else
+                    {
+                        if (Pause.Clicked)
+                        {
+                            State = EngineStates.Editor;
+                        }
+                        else
+                        {
+                            if (Load.Clicked)
+                            {
+                                State = EngineStates.Load;
+                            }
+                            else
+                            {
+                                if (Save.Clicked)
+                                {
+                                    State = EngineStates.Save;
+                                }
+                                else
+                                {
+                                    
+                                }
+                            }
+                        }
+                    }
+
+                    switch (Message.Type)
+                    {
+                        case UI_Message.Clicktype.Left:
+                            flag_linestart = true;
+                            Editorline.Start.X = Offset.X + Origin.X + Message.Position.X;
+                            Editorline.Start.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                            Editorline.End.X = Editorline.Start.X;
+                            Editorline.End.Y = Editorline.Start.Y;
+                            break;
+                        case UI_Message.Clicktype.Move:
+                            if (flag_linestart)
+                            {
+                                Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                                Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                            }
+                            break;
+                        case UI_Message.Clicktype.Released:
+                            Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                            Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                            flag_lineend = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
 
@@ -144,7 +247,7 @@ namespace LineRider
         /// <param name="Message">Abzulegende Nachricht</param>
         public void PlaceMessage(UI_Message Message)
         {
-            
+            Messages.Enqueue(Message); // Nachricht in Postfach legen
         }
 
         public void Start(Graphics graphics)

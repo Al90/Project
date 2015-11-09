@@ -39,7 +39,9 @@
             this.pnlEngine.Size = new System.Drawing.Size(790, 573);
             this.pnlEngine.TabIndex = 0;
             this.pnlEngine.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlEngine_Paint);
+            this.pnlEngine.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseDown);
             this.pnlEngine.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseMove);
+            this.pnlEngine.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseUp);
             // 
             // MainWindow
             // 

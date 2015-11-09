@@ -9,7 +9,7 @@ namespace LineRider
     public class GameButton
     {
         /// <summary>
-        /// Button position
+        /// Button position oben links
         /// </summary>
         public Point Position;
         /// <summary>
@@ -59,20 +59,42 @@ namespace LineRider
         }
 
         /// <summary>
-        /// Feststellen ob sich Position in Button befindet und wenn ja Button mit Klickfarbe einfärben
+        /// Feststellen ob sich Position in Button befindet und wenn ja Button mit Hoverfarbe oder Klickfarbe einfärben
         /// </summary>
-        /// <param name="Position">Klickposition des Mauscursors</param>
-        public void Click(Point Position)
+        public void Handle_UI(UI_Message Message)
         {
-            throw new System.NotImplementedException();
-        }
+            if (Enabled)
+            {
+                switch (Message.Type)
+                {
+                    case UI_Message.Clicktype.Left:
+                        //  Prüfen ob Zeigerposition über Button liegt
+                        if (((Message.Position.X >= Position.X) && (Message.Position.X <= (Position.X + Size))) && ((Message.Position.Y >= Position.Y) && (Message.Position.Y <= (Position.Y + Size))))
+                        {
+                            Clicked = Message.Type == UI_Message.Clicktype.Left; // Prüfen ob gekilckt oder nicht
+                        }
+                        else
+                        {
+                            Clicked = false;
+                        }
+                        break;
 
-        /// <summary>
-        /// Feststellen ob sich Position in Button befindet und wenn ja Button mit Hoverfarbe einfärben
-        /// </summary>
-        public void Hover()
-        {
-            throw new System.NotImplementedException();
+                    case UI_Message.Clicktype.Move:
+
+                        //  Prüfen ob Zeigerposition über Button liegt
+                        if (((Message.Position.X >= Position.X) && (Message.Position.X <= (Position.X + Size))) && ((Message.Position.Y >= Position.Y) && (Message.Position.Y <= (Position.Y + Size))))
+                        {
+                            Selected = Message.Type == UI_Message.Clicktype.Move;
+                        }
+                        else
+                        {
+                            Selected = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -81,6 +103,11 @@ namespace LineRider
         /// <param name="g">Graphikhandle</param>
         public void Draw(Graphics g)
         {
+            if(!Enabled)
+            {
+                Selected = false; 
+                Clicked = false;
+            }
             if (Selected || Clicked)
             {
                 if (Clicked)
