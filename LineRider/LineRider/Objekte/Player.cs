@@ -28,6 +28,24 @@ namespace LineRider
         /// Position des Spielers
         /// </summary>
         public Point Position;
+        /// <summary>
+        /// Bild des Spielers
+        /// </summary>
+        public Bitmap Image;
+        private Font Text_Font;
+        private SolidBrush Text_Brush;
+
+        public Player(Point position, int size, Bitmap image)
+        {
+            Angle = 0;
+            Speed = 0;
+            Size = size;
+            Contacted = null;
+            Position = position;
+            Image = image;
+            Text_Font = new Font("Arial", 12f, FontStyle.Regular);
+            Text_Brush = new SolidBrush(Color.Blue);
+        }
 
         /// <summary>
         /// Zeichnen der Linie
@@ -37,7 +55,8 @@ namespace LineRider
         /// <param name="Origin">Koordinatennullpunkt</param>
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
-            
+            g.DrawImage(Image, (int)(Offset.X + (Origin.X + Position.X) - 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size), Size, Size);
+            g.DrawString(Angle.ToString() + "°", Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Position.X) + 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size));
         }
     }
 }

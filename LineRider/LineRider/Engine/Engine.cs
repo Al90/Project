@@ -66,7 +66,7 @@ namespace LineRider
         public Engine()
         {
             Lines = new List<Line>();
-            Rider = new Player();
+            Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.skate_board_307418_640);
             Acceleration = 1.0;
             Playtime = new DateTime();
             GameButtons = new List<GameButton>();
@@ -102,6 +102,8 @@ namespace LineRider
 
             while(true)
             {
+                #region Spielzustand
+
                 // Spielzustand
                 switch(State)
                 {
@@ -140,7 +142,9 @@ namespace LineRider
                         break;
                 }
 
+                #endregion
 
+                #region Zeichnen
 
                 // Berechnungen anstellen
                 // Hintergrund zeichnen
@@ -165,8 +169,12 @@ namespace LineRider
                 // Frame zeichnen
                 g.DrawImage(Frame, 0, 0);
 
+                #endregion
+
+                #region Nachrichtenverarbeitung
+
                 // Nachrichtenpostfach abarbeiten
-                if (Messages.Count > 0) // Anzahl der Nachrichten wird gezählt
+                while(Messages.Count > 0) // Anzahl der Nachrichten wird gezählt
                 {
                     // Nachricht aus Postfach holen
                     UI_Message Message = Messages.Dequeue();
@@ -202,31 +210,51 @@ namespace LineRider
                         }
                     }
 
-                    switch (Message.Type)
+                    // Wenn im State Editor, vom Benutzer eingegebene Punkte zu einer Linie umrechnen
+                    if(State == EngineStates.Editor)
                     {
-                        case UI_Message.Clicktype.Left:
-                            flag_linestart = true;
-                            Editorline.Start.X = Offset.X + Origin.X + Message.Position.X;
-                            Editorline.Start.Y = Offset.Y - Origin.Y - Message.Position.Y;
-                            Editorline.End.X = Editorline.Start.X;
-                            Editorline.End.Y = Editorline.Start.Y;
-                            break;
-                        case UI_Message.Clicktype.Move:
-                            if (flag_linestart)
-                            {
-                                Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
-                                Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
-                            }
-                            break;
-                        case UI_Message.Clicktype.Released:
-                            Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
-                            Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
-                            flag_lineend = true;
-                            break;
-                        default:
-                            break;
+                        switch (Message.Type)
+                        {
+                                // Mit einem Linksklick wird der Start einer Linie markiert
+                            case UI_Message.Clicktype.Left:
+                                flag_linestart = true;
+                                Editorline.Start.X = Offset.X + Origin.X + Message.Position.X;
+                                Editorline.Start.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                                Editorline.End.X = Editorline.Start.X;
+                                Editorline.End.Y = Editorline.Start.Y;
+                                break;
+
+                                // Mit dem bewegen der Maus wird der Endpunkt verschoben 
+                            case UI_Message.Clicktype.Move:
+                                if (flag_linestart)
+                                {
+                                    Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                                    Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                                }
+                                break;
+
+                                // Mit Loslassen der Linkstaste wird der Enpunkt der Linie gesetzt
+                            case UI_Message.Clicktype.Released:
+                                if (flag_linestart)
+                                {
+                                    Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                                    Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                                    flag_lineend = true;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // Flags zurücksetzen
+                        flag_linestart = false;
+                        flag_lineend = false;
                     }
                 }
+
+                #endregion
             }
         }
 
