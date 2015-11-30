@@ -1,4 +1,10 @@
-﻿using System;
+﻿////////////////////////////////////////////////////
+// Projekt Linerider // Simon Müller              //
+// FEE012            // Hard- und Softwaretechnik //
+// 23.11.2015        // V0.0.0                    //
+////////////////////////////////////////////////////
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,38 +12,54 @@ using System.Text;
 
 namespace LineRider
 {
+    /// <summary>
+    /// Eigene Buttonklasse für das Spiel
+    /// </summary>
     public class GameButton
     {
+        #region Attribute
+
         /// <summary>
         /// Button position oben links
         /// </summary>
         public Point Position;
+
         /// <summary>
         /// Button grösse
         /// </summary>
         public int Size;
+
         /// <summary>
         /// Status des Button
         /// </summary>
         public bool Clicked;
 
+        /// <summary>
+        /// Button angewählt
+        /// </summary>
         public bool Selected;
+
         /// <summary>
         /// Button zulässig
         /// </summary>
         public bool Enabled;
+
         /// <summary>
         /// Bild des Button
         /// </summary>
         public Bitmap Image;
+
         /// <summary>
         /// Farbe in welcher der Butten erscheint wenn sich der Mauscursor über dem Button befindet
         /// </summary>
         public Color HoverColor;
+
         /// <summary>
         /// Farbe in welcher der Butten erscheint wenn der Button geklickt ist
         /// </summary>
         public Color ClickColor;
+
+        #endregion
 
         /// <summary>
         /// Konstruktor

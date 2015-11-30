@@ -24,7 +24,7 @@ namespace LineRider
         public double Length;
 
         /// <summary>
-        /// Winkel gegenüber der Horizontalen im Gegenuhrzeigersinn
+        /// Winkel gegenüber der Horizontalen im Gegenuhrzeigersinn in Grad
         /// </summary>
         public double Angle;
 
@@ -32,6 +32,9 @@ namespace LineRider
         /// Linienstil
         /// </summary>
         private Pen Style;
+
+        private Font Text_Font;
+        private SolidBrush Text_Brush;
 
         /// <summary>
         /// Konstruktor
@@ -42,6 +45,8 @@ namespace LineRider
             End = new Point();
             Calculate();
             Style = new Pen(Color.Black);
+            Text_Font = new Font("Arial", 12f, FontStyle.Regular);
+            Text_Brush = new SolidBrush(Color.Blue);
         }
 
         /// <summary>
@@ -82,6 +87,8 @@ namespace LineRider
                 {
                     Angle = 360f - Math.Acos(dx / Length) / Math.PI * 180f;
                 }
+                Angle += 180f;
+                Angle = Angle % 360f;
             }
             else
             {
@@ -99,6 +106,7 @@ namespace LineRider
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
             g.DrawLine(Style, Offset.X + Origin.X + Start.X, Offset.Y - Origin.Y - Start.Y, Offset.X + Origin.X + End.X, Offset.Y - Origin.Y - End.Y);
+            g.DrawString(Angle.ToString() + "°", Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Start.X)), (int)(Offset.Y - (Origin.Y + Start.Y)));
         }
     }
 }

@@ -11,7 +11,7 @@ namespace LineRider
         /// <summary>
         /// Winkel des Spielers
         /// </summary>
-        private double Angle;
+        public double Angle;
         /// <summary>
         /// Geschwindigkeit des Spielers
         /// </summary>
@@ -37,7 +37,7 @@ namespace LineRider
 
         public Player(Point position, int size, Bitmap image)
         {
-            Angle = 0;
+            Angle = 270;
             Speed = 0;
             Size = size;
             Contacted = null;

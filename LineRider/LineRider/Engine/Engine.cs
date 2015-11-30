@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace LineRider
 {
@@ -12,11 +14,11 @@ namespace LineRider
         /// <summary>
         /// Alle Linien
         /// </summary>
-        private List<Line> Lines;
+        public List<Line> Lines;
         /// <summary>
         /// Spieler
         /// </summary>
-        private Player Rider;
+        public Player Rider;
         /// <summary>
         /// Allgemeine Beschleunigung
         /// </summary>
@@ -58,7 +60,10 @@ namespace LineRider
         /// <summary>
         /// Globaler Spielzustand
         /// </summary>
-        private EngineStates State;
+        public EngineStates State;
+
+        public EventHandler SaveGame;
+        public EventHandler LoadGame;
 
         /// <summary>
         /// Konstruktor
@@ -91,6 +96,7 @@ namespace LineRider
         /// Grafik berechnen
         /// </summary>
         /// <param name="obj">Optionales Threadobjekt</param>
+        [STAThread]
         private void RenderGraphics(object obj)
         {
             Frame = new Bitmap(800, 600);
@@ -99,6 +105,7 @@ namespace LineRider
             bool flag_linestart = false;
             bool flag_lineend = false;
             Line Editorline = new Line();
+            int TimeStamp = 0;
 
             while(true)
             {
@@ -112,9 +119,12 @@ namespace LineRider
                         Load.Enabled = true;
                         Save.Enabled = true;
                         Pause.Clicked = true;
+                        Pause.Enabled = true;
+                        Play.Enabled = true;
 
                         if(flag_lineend)
                         {
+                            Editorline.Calculate();
                             Lines.Add(Editorline);
                             Editorline = new Line();
                             flag_lineend = false;
@@ -124,21 +134,27 @@ namespace LineRider
                         break;
                     
                     case EngineStates.Load:
-                        Load.Enabled = true;
-                        Save.Enabled = true;
+                        Load.Enabled = false;
+                        Save.Enabled = false;
                         Load.Clicked = true;
+                        Pause.Enabled = false;
+                        Play.Enabled = false;
                         break;
 
                     case EngineStates.Run:
                         Load.Enabled = false;
                         Save.Enabled = false;
                         Play.Clicked = true;
+                        Pause.Enabled = true;
+                        Play.Enabled = true;
                         break;
 
                     case EngineStates.Save:
-                        Load.Enabled = true;
-                        Save.Enabled = true;
+                        Load.Enabled = false;
+                        Save.Enabled = false;
                         Save.Clicked = true;
+                        Pause.Enabled = false;
+                        Play.Enabled = false;
                         break;
                 }
 
@@ -147,6 +163,54 @@ namespace LineRider
                 #region Zeichnen
 
                 // Berechnungen anstellen
+                if ((System.Environment.TickCount >= (TimeStamp + 100)) && (State == EngineStates.Run))
+                {
+                    // TimeStamp aktualisieren
+                    TimeStamp = System.Environment.TickCount; 
+
+                    // Geschwindigkeit des Spielers rechnen (später)
+                    Rider.Speed = 10;
+
+                    // Kontaktierte Linie berechnen
+                    double SmallestDistance = double.MaxValue;
+                    double Distance = double.MaxValue;
+                    foreach(Line L in Lines)
+                    {
+                        // Distanz zu Linie rechnen
+                        Distance = getDistance(Rider.Position, L);
+
+                        // Prüfen ob Distanz kleiner als kleinste Distanz und kleiner als 5
+                        if ((Distance < SmallestDistance) && (Distance < 5) && (Rider.Contacted != L))
+                        {
+                            // Kleinste Distanz aktualisieren
+                            SmallestDistance = Distance;
+
+                            // Kontaktierte Linie setzen
+                            Rider.Contacted = L;
+                        }
+                    }
+
+                    // Falls nicht kontaktiert
+                    if (SmallestDistance > 5)
+                    {
+                        Rider.Contacted = null;
+                    }
+
+                    // Abfrage Linie kontaktiert
+                    if (Rider.Contacted != null)
+                    {
+                        // Winkel der Linie kopieren
+                        Rider.Angle = Rider.Contacted.Angle;
+                    }
+
+                    // Verschiebung in X rechnen
+                    Rider.Position.X += (int)(Rider.Speed * Math.Cos(Rider.Angle * Math.PI / 180));
+
+                    // Verschiebung in Y rechnen
+                    Rider.Position.Y += (int)(Rider.Speed * Math.Sin(Rider.Angle * Math.PI / 180));
+                }
+
+
                 // Hintergrund zeichnen
                 f_handle.Clear(Color.Orange);
 
@@ -194,13 +258,22 @@ namespace LineRider
                         {
                             if (Load.Clicked)
                             {
-                                State = EngineStates.Load;
+                                if (State != EngineStates.Load)
+                                {
+                                    State = EngineStates.Load;
+                                    LoadGame.Invoke(this, null);
+                                    Lines.ForEach(x => x.Calculate());
+                                }
                             }
                             else
                             {
                                 if (Save.Clicked)
                                 {
-                                    State = EngineStates.Save;
+                                    if(State != EngineStates.Save)
+                                    {
+                                        State = EngineStates.Save;
+                                        SaveGame.Invoke(this, null);
+                                    }
                                 }
                                 else
                                 {
@@ -230,6 +303,7 @@ namespace LineRider
                                 {
                                     Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
                                     Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
+                                    Editorline.Calculate();
                                 }
                                 break;
 
@@ -256,6 +330,22 @@ namespace LineRider
 
                 #endregion
             }
+        }
+
+        private double getDistance(Point P, Line L)
+        {
+            Point V = new Point(L.End.X - L.Start.X,L.End.Y - L.Start.Y);
+            Point W = new Point(P.X - L.Start.X, P.Y - L.Start.Y);
+
+            double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
+            double c2 = (double)V.X * V.X + (double)V.Y * V.Y;
+            double b = c1 / c2;
+
+            double Pbx = L.Start.X + b * V.X;
+            double Pby = L.Start.Y + b * V.Y;
+            double Pnx = P.X - Pbx;
+            double Pny = P.Y - Pby;
+            return Math.Sqrt(Pnx * Pnx + Pny * Pny);
         }
 
         /// <summary>
