@@ -27,7 +27,7 @@ namespace LineRider
         /// <summary>
         /// Position des Spielers
         /// </summary>
-        public Point Position;
+        public PointF Position;
         /// <summary>
         /// Bild des Spielers
         /// </summary>
@@ -35,7 +35,7 @@ namespace LineRider
         private Font Text_Font;
         private SolidBrush Text_Brush;
 
-        public Player(Point position, int size, Bitmap image)
+        public Player(PointF position, int size, Bitmap image)
         {
             Angle = 270;
             Speed = 0;

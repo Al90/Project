@@ -32,6 +32,17 @@ namespace LineRider
         /// Linienstil
         /// </summary>
         private Pen Style;
+        public Color Color
+        {
+            get
+            {
+                return Style.Color;
+            }
+            set
+            {
+                Style = new Pen(value);
+            }
+        }
 
         private Font Text_Font;
         private SolidBrush Text_Brush;
@@ -65,7 +76,7 @@ namespace LineRider
             if (Length != 0)
             {
                 // 1. Quadrant
-                if ((dx >= 0) && (dy >= 0))
+                if ((dx > 0) && (dy > 0))
                 {
                     Angle = Math.Acos(dx / Length) / Math.PI * 180f;
                 }
@@ -87,8 +98,24 @@ namespace LineRider
                 {
                     Angle = 360f - Math.Acos(dx / Length) / Math.PI * 180f;
                 }
+
                 Angle += 180f;
                 Angle = Angle % 360f;
+
+                // Spezialfall dy ist Null
+                if (dy == 0)
+                {
+                    Angle = (dx < 0) ? 0f : 180f;
+                }
+
+                // Spezialfall dx ist Null
+                if (dx == 0)
+                {
+                    Angle = (dy < 0) ? 90f : 270f;
+                }
+                
+
+
             }
             else
             {

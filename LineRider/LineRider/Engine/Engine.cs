@@ -188,12 +188,14 @@ namespace LineRider
                             // Kontaktierte Linie setzen
                             Rider.Contacted = L;
                         }
-                    }
 
-                    // Falls nicht kontaktiert
-                    if (SmallestDistance > 5)
-                    {
-                        Rider.Contacted = null;
+                        if (Rider.Contacted == L)
+                        {
+                            if (Distance > 10)
+                            {
+                                Rider.Contacted = null;
+                            }
+                        }
                     }
 
                     // Abfrage Linie kontaktiert
@@ -201,13 +203,18 @@ namespace LineRider
                     {
                         // Winkel der Linie kopieren
                         Rider.Angle = Rider.Contacted.Angle;
+                        Rider.Contacted.Color = Color.Red;
+                    }
+                    else
+                    {
+                        Lines.ForEach(x => x.Color = Color.Black);
                     }
 
                     // Verschiebung in X rechnen
-                    Rider.Position.X += (int)(Rider.Speed * Math.Cos(Rider.Angle * Math.PI / 180));
+                    Rider.Position.X += (float)(Rider.Speed * Math.Cos(Rider.Angle * Math.PI / 180));
 
                     // Verschiebung in Y rechnen
-                    Rider.Position.Y += (int)(Rider.Speed * Math.Sin(Rider.Angle * Math.PI / 180));
+                    Rider.Position.Y += (float)(Rider.Speed * Math.Sin(Rider.Angle * Math.PI / 180));
                 }
 
 
@@ -253,6 +260,10 @@ namespace LineRider
                         if (Pause.Clicked)
                         {
                             State = EngineStates.Editor;
+                            Rider.Position.X = 100;
+                            Rider.Position.Y = 500;
+                            Rider.Angle = 270f;
+                            Rider.Speed = 0;
                         }
                         else
                         {
@@ -332,10 +343,10 @@ namespace LineRider
             }
         }
 
-        private double getDistance(Point P, Line L)
+        private double getDistance(PointF P, Line L)
         {
-            Point V = new Point(L.End.X - L.Start.X,L.End.Y - L.Start.Y);
-            Point W = new Point(P.X - L.Start.X, P.Y - L.Start.Y);
+            PointF V = new PointF(L.End.X - L.Start.X,L.End.Y - L.Start.Y);
+            PointF W = new PointF(P.X - L.Start.X, P.Y - L.Start.Y);
 
             double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
             double c2 = (double)V.X * V.X + (double)V.Y * V.Y;
