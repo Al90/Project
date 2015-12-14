@@ -101,7 +101,7 @@ namespace LineRider
         {
             Frame = new Bitmap(800, 600);
             Graphics f_handle = Graphics.FromImage(Frame);
-            Pause.Clicked = true;
+            Pause.State = true;
             bool flag_linestart = false;
             bool flag_lineend = false;
             Line Editorline = new Line();
@@ -118,9 +118,13 @@ namespace LineRider
                     case EngineStates.Editor:
                         Load.Enabled = true;
                         Save.Enabled = true;
-                        Pause.Clicked = true;
+                        Pause.State = true;
                         Pause.Enabled = true;
                         Play.Enabled = true;
+                        Load.State = false;
+                        Save.State = false;
+                        Pause.State = true;
+                        Play.State = false;
 
                         if(flag_lineend)
                         {
@@ -136,25 +140,34 @@ namespace LineRider
                     case EngineStates.Load:
                         Load.Enabled = false;
                         Save.Enabled = false;
-                        Load.Clicked = true;
+                        Load.State = true;
                         Pause.Enabled = false;
                         Play.Enabled = false;
+                        Save.State = false;
+                        Pause.State = false;
+                        Play.State = false;
                         break;
 
                     case EngineStates.Run:
                         Load.Enabled = false;
                         Save.Enabled = false;
-                        Play.Clicked = true;
+                        Play.State = true;
                         Pause.Enabled = true;
                         Play.Enabled = true;
+                        Load.State = false;
+                        Save.State = false;
+                        Pause.State = false;
                         break;
 
                     case EngineStates.Save:
                         Load.Enabled = false;
                         Save.Enabled = false;
-                        Save.Clicked = true;
+                        Save.State = true;
                         Pause.Enabled = false;
                         Play.Enabled = false;
+                        Load.State = false;
+                        Pause.State = false;
+                        Play.State = false;
                         break;
                 }
 
@@ -176,22 +189,33 @@ namespace LineRider
                     double Distance = double.MaxValue;
                     foreach(Line L in Lines)
                     {
-                        // Distanz zu Linie rechnen
-                        Distance = getDistance(Rider.Position, L);
-
-                        // Prüfen ob Distanz kleiner als kleinste Distanz und kleiner als 5
-                        if ((Distance < SmallestDistance) && (Distance < 5) && (Rider.Contacted != L))
+                        // Prüfen ob Linie in der Nähe des Spielers ist
+                        if (inRange(Rider.Position, L))
                         {
-                            // Kleinste Distanz aktualisieren
-                            SmallestDistance = Distance;
+                            // Distanz zu Linie rechnen
+                            Distance = getDistanceF(Rider.Position, L);
 
-                            // Kontaktierte Linie setzen
-                            Rider.Contacted = L;
+                            // Prüfen ob Distanz kleiner als kleinste Distanz und kleiner als 5
+                            if ((Distance < SmallestDistance) && (Distance < 5) && (Rider.Contacted != L))
+                            {
+                                // Kleinste Distanz aktualisieren
+                                SmallestDistance = Distance;
+
+                                // Kontaktierte Linie setzen
+                                Rider.Contacted = L;
+                            }
+
+                            if (Rider.Contacted == L)
+                            {
+                                if (Distance > 10)
+                                {
+                                    Rider.Contacted = null;
+                                }
+                            }
                         }
-
-                        if (Rider.Contacted == L)
+                        else
                         {
-                            if (Distance > 10)
+                            if (Rider.Contacted == L)
                             {
                                 Rider.Contacted = null;
                             }
@@ -205,10 +229,16 @@ namespace LineRider
                         Rider.Angle = Rider.Contacted.Angle;
                         Rider.Contacted.Color = Color.Red;
                     }
-                    else
+                    
+                    // Alle nicht kontaktierten Linien schwarz färben
+                    Lines.ForEach(x =>
                     {
-                        Lines.ForEach(x => x.Color = Color.Black);
-                    }
+                        if (x != Rider.Contacted)
+                        {
+                            x.Color = Color.Black;
+                        }
+                    });
+                    
 
                     // Verschiebung in X rechnen
                     Rider.Position.X += (float)(Rider.Speed * Math.Cos(Rider.Angle * Math.PI / 180));
@@ -251,6 +281,7 @@ namespace LineRider
                     UI_Message Message = Messages.Dequeue();
                     // Schauen, welcher Button geklickt wurde
                     GameButtons.ForEach(x => x.Handle_UI(Message));
+
                     if(Play.Clicked)
                     {
                         State = EngineStates.Run;
@@ -273,7 +304,6 @@ namespace LineRider
                                 {
                                     State = EngineStates.Load;
                                     LoadGame.Invoke(this, null);
-                                    Lines.ForEach(x => x.Calculate());
                                 }
                             }
                             else
@@ -295,7 +325,7 @@ namespace LineRider
                     }
 
                     // Wenn im State Editor, vom Benutzer eingegebene Punkte zu einer Linie umrechnen
-                    if(State == EngineStates.Editor)
+                    if((State == EngineStates.Editor)&&(Pause.Clicked == false))
                     {
                         switch (Message.Type)
                         {
@@ -345,7 +375,29 @@ namespace LineRider
 
         private double getDistance(PointF P, Line L)
         {
-            PointF V = new PointF(L.End.X - L.Start.X,L.End.Y - L.Start.Y);
+            Point V = new Point((int)(L.End.X - L.Start.X),(int)(L.End.Y - L.Start.Y));
+            Point W = new Point((int)(P.X - L.Start.X), (int)(P.Y - L.Start.Y));
+
+            double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
+            double c2 = (double)V.X * V.X + (double)V.Y * V.Y;
+            double b = c1 / c2;
+
+            double Pbx = L.Start.X + b * V.X;
+            double Pby = L.Start.Y + b * V.Y;
+            double Pnx = P.X - Pbx;
+            double Pny = P.Y - Pby;
+            return Math.Sqrt(Pnx * Pnx + Pny * Pny);
+        }
+
+        /// <summary>
+        /// Distanz von einem Punkt zu einer Geraden durch zwei Punkte
+        /// </summary>
+        /// <param name="P">Punkt</param>
+        /// <param name="L">Gerade</param>
+        /// <returns>Distanz</returns>
+        private double getDistanceF(PointF P, Line L)
+        {
+            PointF V = new PointF(L.End.X - L.Start.X, L.End.Y - L.Start.Y);
             PointF W = new PointF(P.X - L.Start.X, P.Y - L.Start.Y);
 
             double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
@@ -357,6 +409,80 @@ namespace LineRider
             double Pnx = P.X - Pbx;
             double Pny = P.Y - Pby;
             return Math.Sqrt(Pnx * Pnx + Pny * Pny);
+        }
+
+        /// <summary>
+        /// Prüfen ob Punkt im Bereich des rechteckigen Bereiches der Linie ist
+        /// </summary>
+        /// <param name="P">Punkt</param>
+        /// <param name="L">Linie</param>
+        /// <returns>true wenn im Bereich</returns>
+        private bool inRange(PointF P, Line L)
+        {
+            if (L.End.X > L.Start.X)
+            {
+                if (((P.X+5) >= L.Start.X) && ((P.X-5) <= L.End.X))
+                {
+                    if (L.End.Y > L.Start.Y)
+                    {
+                        if (((P.Y+5) >= L.Start.Y) && ((P.Y-5) <= L.End.Y))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (((P.Y-5) <= L.Start.Y) && ((P.Y+5) >= L.End.Y))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (((P.X-5) <= L.Start.X) && ((P.X+5) >= L.End.X))
+                {
+                    if (L.End.Y > L.Start.Y)
+                    {
+                        if (((P.Y+5) >= L.Start.Y) && ((P.Y-5) <= L.End.Y))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (((P.Y-5) <= L.Start.Y) && ((P.Y+5) >= L.End.Y))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         /// <summary>

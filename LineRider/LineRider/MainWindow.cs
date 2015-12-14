@@ -80,6 +80,7 @@ namespace LineRider
                         line.Start.Y = Convert.ToInt32(Start[1]);
                         line.End.X = Convert.ToInt32(End[0]);
                         line.End.Y = Convert.ToInt32(End[1]);
+                        line.Calculate();
                         Engine.Lines.Add(line);
                     }
                     Reader.Close();

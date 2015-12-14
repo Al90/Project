@@ -45,6 +45,11 @@ namespace LineRider
         public bool Enabled;
 
         /// <summary>
+        /// Button eingeschaltet
+        /// </summary>
+        public bool State;
+
+        /// <summary>
         /// Bild des Button
         /// </summary>
         public Bitmap Image;
@@ -72,6 +77,7 @@ namespace LineRider
         {
             Position = position;
             Size = size;
+            State = false;
             Clicked = false;
             Selected = false;
             Enabled = enabled;
@@ -130,9 +136,9 @@ namespace LineRider
                 Selected = false; 
                 Clicked = false;
             }
-            if (Selected || Clicked)
+            if (Selected || State)
             {
-                if (Clicked)
+                if (State)
                 {
                     g.FillEllipse(new SolidBrush(ClickColor), Position.X, Position.Y, Size, Size);
                 }
