@@ -36,7 +36,7 @@
             this.pnlEngine.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlEngine.Location = new System.Drawing.Point(0, 0);
             this.pnlEngine.Name = "pnlEngine";
-            this.pnlEngine.Size = new System.Drawing.Size(790, 573);
+            this.pnlEngine.Size = new System.Drawing.Size(800, 600);
             this.pnlEngine.TabIndex = 0;
             this.pnlEngine.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlEngine_Paint);
             this.pnlEngine.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlEngine_MouseDown);
@@ -47,7 +47,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(790, 573);
+            this.ClientSize = new System.Drawing.Size(800, 600);
             this.Controls.Add(this.pnlEngine);
             this.Name = "MainWindow";
             this.Text = "Form1";

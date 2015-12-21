@@ -34,7 +34,7 @@ namespace LineRider
         /// <summary>
         /// Spieldauer
         /// </summary>
-        private DateTime Playtime;
+        private TimeSpan Playtime;
         /// <summary>
         /// Alle Buttons
         /// </summary>
@@ -73,7 +73,7 @@ namespace LineRider
             Lines = new List<Line>();
             Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.skate_board_307418_640);
             Acceleration = 1.0;
-            Playtime = new DateTime();
+            Playtime = new TimeSpan();
             GameButtons = new List<GameButton>();
             Origin = new Point();
             Messages = new Queue<UI_Message>();
@@ -106,6 +106,11 @@ namespace LineRider
             bool flag_lineend = false;
             Line Editorline = new Line();
             int TimeStamp = 0;
+            int Ground = 0;
+            DateTime Starttime = DateTime.Now;
+            Font Time_f = new Font("Arial",24f);
+            Brush Time_b = new SolidBrush(Color.Blue);
+          
 
             while(true)
             {
@@ -181,8 +186,25 @@ namespace LineRider
                     // TimeStamp aktualisieren
                     TimeStamp = System.Environment.TickCount; 
 
-                    // Geschwindigkeit des Spielers rechnen (später)
-                    Rider.Speed = 10;
+                    // Fahrdauer rechnen
+                    Playtime = DateTime.Now - Starttime;
+
+                    // Geschwindigkeit des Spielers rechnen
+                    //Rider.Speed = 10;
+                    if (Rider.Contacted == null)
+                    {
+                        double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI)-1;
+                        double x_speed = Rider.Speed * Math.Cos(Rider.Angle / 360 * 2 * Math.PI);
+                        Rider.Speed = Math.Sqrt((y_speed * y_speed) + (x_speed * x_speed));
+                        if (Rider.Speed == 0)
+                        {
+                            Rider.Angle = 270;
+                        }
+                        else
+                        {
+                            Rider.Angle = Math.Asin(y_speed / Rider.Speed) * 360 / (2 * Math.PI);
+                        }
+                    }
 
                     // Kontaktierte Linie berechnen
                     double SmallestDistance = double.MaxValue;
@@ -245,6 +267,17 @@ namespace LineRider
 
                     // Verschiebung in Y rechnen
                     Rider.Position.Y += (float)(Rider.Speed * Math.Sin(Rider.Angle * Math.PI / 180));
+
+                    // Feststellen ob Spiel zu ende ist
+                    if (Rider.Position.Y < Ground)
+                    {
+                        State = EngineStates.Editor;
+                        Rider.Position.X = 100;
+                        Rider.Position.Y = 500;
+                        Rider.Angle = 270f;
+                        Rider.Speed = 0;
+                        Play.Clicked = false;
+                    }
                 }
 
 
@@ -264,6 +297,8 @@ namespace LineRider
                 Rider.Draw(f_handle, Offset, Origin);
 
                 // Spielzeitzähler 
+                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss"), Time_f, Time_b, 10f, 556f);
+
                 // Menu
                 GameButtons.ForEach(x => x.Draw(f_handle));
 
@@ -284,7 +319,24 @@ namespace LineRider
 
                     if(Play.Clicked)
                     {
-                        State = EngineStates.Run;
+                        if (State != EngineStates.Run)
+                        {
+                            State = EngineStates.Run;
+                            Starttime = DateTime.Now;
+                            if (Lines.Count == 0)
+                            {
+                                Ground = 0;
+                            }
+                            else
+                            {
+                                Ground = Lines.Min(x => x.Start.Y);
+                                if (Ground > Lines.Min(x => x.End.Y))
+                                {
+                                    Ground = Lines.Min(x => x.End.Y);
+                                }
+                                Ground -= 100;
+                            }
+                        }
                     }
                     else
                     {
