@@ -193,16 +193,66 @@ namespace LineRider
                     //Rider.Speed = 10;
                     if (Rider.Contacted == null)
                     {
-                        double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI)-1;
+                        // Freier Fall
+                        double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI) - 1;
                         double x_speed = Rider.Speed * Math.Cos(Rider.Angle / 360 * 2 * Math.PI);
                         Rider.Speed = Math.Sqrt((y_speed * y_speed) + (x_speed * x_speed));
+
+                        if (Rider.Speed > 10)
+                        {
+                            double factor = 10 / Rider.Speed;
+                            y_speed = y_speed * factor;
+                            x_speed = x_speed * factor;
+                            Rider.Speed = 10;
+                        }
+
                         if (Rider.Speed == 0)
                         {
                             Rider.Angle = 270;
                         }
                         else
                         {
-                            Rider.Angle = Math.Asin(y_speed / Rider.Speed) * 360 / (2 * Math.PI);
+                            if (x_speed > 0)
+                            {
+                                Rider.Angle = (Math.Asin(y_speed / Rider.Speed) * 360 / (2 * Math.PI)) % 360;
+                            }
+                            else
+                            {
+                                Rider.Angle = (180 - Math.Asin(y_speed / Rider.Speed) * 360 / (2 * Math.PI)) % 360;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Y-Komponente der Geschwindigkeit
+                        double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI) - Math.Sin(Rider.Angle / 360 * 2 * Math.PI);
+                        // X-Komponente der Geschwindigkeit
+                        double x_speed = Rider.Speed * Math.Cos(Rider.Angle / 360 * 2 * Math.PI);
+                        double factor = 0;
+                        if ((Rider.Angle % 90) != 0)
+                        {
+                            double angle = Rider.Angle % 45;
+                            if (angle == 0)
+                            {
+                                factor = 0.5;
+                            }
+                            else
+                            {
+                                factor = Math.Sin(angle / 360 * 2 * Math.PI);
+                            }
+                            if (((Rider.Angle > 0) && (Rider.Angle < 90)) || ((Rider.Angle > 180) && (Rider.Angle < 270)))
+                            {
+                                x_speed -= factor;
+                            }
+                            else
+                            {
+                                x_speed += factor;
+                            }
+                        }
+                        Rider.Speed = Math.Sqrt((y_speed * y_speed) + (x_speed * x_speed));
+                        if (Rider.Speed < 0.5)
+                        {
+                            Rider.Angle = (Rider.Angle + 180) % 360;
                         }
                     }
 
@@ -222,6 +272,32 @@ namespace LineRider
                             {
                                 // Kleinste Distanz aktualisieren
                                 SmallestDistance = Distance;
+
+                                Rider.Speed = Rider.Speed * 0.5;
+
+                                // Spielerwinkel rechnen
+                                if (L.Angle <= 90)
+                                {
+                                    if ((L.Angle - (Rider.Angle % 180) >= 90))
+                                    {
+                                        Rider.Angle = (L.Angle + 180) % 360;
+                                    }
+                                    else
+                                    {
+                                        Rider.Angle = L.Angle;
+                                    }
+                                }
+                                else
+                                {
+                                    if ((L.Angle - (Rider.Angle % 180) >= 90))
+                                    {
+                                        Rider.Angle = L.Angle;
+                                    }
+                                    else
+                                    {
+                                        Rider.Angle = (L.Angle + 180) % 360;
+                                    }
+                                }
 
                                 // Kontaktierte Linie setzen
                                 Rider.Contacted = L;
@@ -248,7 +324,7 @@ namespace LineRider
                     if (Rider.Contacted != null)
                     {
                         // Winkel der Linie kopieren
-                        Rider.Angle = Rider.Contacted.Angle;
+                        // Rider.Angle = Rider.Contacted.Angle;
                         Rider.Contacted.Color = Color.Red;
                     }
                     

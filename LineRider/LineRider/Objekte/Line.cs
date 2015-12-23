@@ -68,6 +68,7 @@ namespace LineRider
             // Delta X ausrechnen
             int dx = Start.X - End.X;
             int dy = Start.Y - End.Y;
+
             // Länge berechnen
             Length = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
             
@@ -100,7 +101,7 @@ namespace LineRider
                 }
 
                 Angle += 180f;
-                Angle = Angle % 360f;
+                Angle = Angle % 180f;
 
                 // Spezialfall dy ist Null
                 if (dy == 0)
@@ -111,11 +112,8 @@ namespace LineRider
                 // Spezialfall dx ist Null
                 if (dx == 0)
                 {
-                    Angle = (dy < 0) ? 90f : 270f;
+                    Angle = (dy < 0) ? 90f : 90f;
                 }
-                
-
-
             }
             else
             {
