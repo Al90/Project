@@ -116,7 +116,7 @@ namespace LineRider
                     Writer.WriteLine(Engine.Rider.Position.X.ToString() + ";" + Engine.Rider.Position.Y.ToString());
                     foreach (Line line in Engine.Lines)
                     {
-                        Writer.WriteLine(line.Start.X.ToString() + ";" + line.Start.Y.ToString() + "|" + line.End.X.ToString() + ";" + line.End.Y.ToString());
+                    Writer.WriteLine(line.Start.X.ToString() + ";" + line.Start.Y.ToString() + "|" + line.End.X.ToString() + ";" + line.End.Y.ToString());
                     }
                     Writer.Flush();
                     Writer.Close();

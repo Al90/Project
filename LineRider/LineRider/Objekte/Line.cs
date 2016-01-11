@@ -46,6 +46,11 @@ namespace LineRider
 
         private Font Text_Font;
         private SolidBrush Text_Brush;
+        /// <summary>
+        /// Max. Beschleunigung
+        /// </summary>
+        private static double ACC = 1;
+        public double acc;
 
         /// <summary>
         /// Konstruktor
@@ -58,6 +63,7 @@ namespace LineRider
             Style = new Pen(Color.Black);
             Text_Font = new Font("Arial", 12f, FontStyle.Regular);
             Text_Brush = new SolidBrush(Color.Blue);
+            acc = 0;
         }
 
         /// <summary>
@@ -120,6 +126,13 @@ namespace LineRider
                 Angle = 0;
             }
 
+            // Beschleunigung der Linie rechnen
+            while (Angle > 180)
+            {
+                Angle -= 180;
+            }
+            acc = Math.Sin(Angle / 360 * 2 * Math.PI);
+
         }
 
         /// <summary>
@@ -131,7 +144,7 @@ namespace LineRider
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
             g.DrawLine(Style, Offset.X + Origin.X + Start.X, Offset.Y - Origin.Y - Start.Y, Offset.X + Origin.X + End.X, Offset.Y - Origin.Y - End.Y);
-            g.DrawString(Angle.ToString() + "°", Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Start.X)), (int)(Offset.Y - (Origin.Y + Start.Y)));
+            g.DrawString(Angle.ToString() + "°\n" + acc.ToString(), Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Start.X)), (int)(Offset.Y - (Origin.Y + Start.Y)));
         }
     }
 }
