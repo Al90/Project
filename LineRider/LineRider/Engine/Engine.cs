@@ -228,34 +228,47 @@ namespace LineRider
                     }
                     else
                     {
+                        // Speed prüfen
+                        if (Rider.Speed == 0 || Math.Abs(Rider.Speed) < Rider.Contacted.acc)
+                        {
+                            Rider.Angle = (Rider.Angle + 180) % 360;
+                        }
+
                         // Fallunterscheidung
-                        if (Rider.Angle >= 0 && Rider.Angle <= 90)
+                        //if (Rider.Angle >= 0 && Rider.Angle <= 90)
+                        //{
+                        //    Rider.Speed -= Rider.Contacted.acc;
+                        //}
+                        //else
+                        //{
+                        //    if (Rider.Angle > 90 && Rider.Angle < 180)
+                        //    {
+                        //        Rider.Speed += Rider.Contacted.acc;
+                        //    }
+                        //    else
+                        //    {
+                        //        if (Rider.Angle >= 180 && Rider.Angle <= 270)
+                        //        {
+                        //            Rider.Speed -= Rider.Contacted.acc;
+                        //        }
+                        //        else
+                        //        {
+                        //            Rider.Speed += Rider.Contacted.acc;
+                        //        }
+                        //    }
+                        //}
+
+                        if (Rider.Angle > 0 && Rider.Angle < 180)
                         {
                             Rider.Speed -= Rider.Contacted.acc;
                         }
                         else
                         {
-                            if (Rider.Angle > 90 && Rider.Angle < 180)
+                            if (Rider.Angle != 0 && Rider.Angle != 180)
                             {
                                 Rider.Speed += Rider.Contacted.acc;
                             }
-                            else
-                            {
-                                if (Rider.Angle >= 180 && Rider.Angle <= 270)
-                                {
-                                    Rider.Speed -= Rider.Contacted.acc;
-                                }
-                                else
-                                {
-                                    Rider.Speed += Rider.Contacted.acc;
-                                }
-                            }
                         }
-                        //// Speed prüfen
-                        //if (Rider.Speed < 0)
-                        //{
-                        //    Rider.Angle = (Rider.Angle + 180) % 360;
-                        //}
                     }
 
                     // Kontaktierte Linie berechnen
@@ -275,18 +288,45 @@ namespace LineRider
                                 // Kleinste Distanz aktualisieren
                                 SmallestDistance = Distance;
 
-                                Rider.Speed = Rider.Speed * 0.5;
+                               // Rider.Speed = Rider.Speed * 0.5;
 
                                 // Spielerwinkel rechnen
-                                if ((Rider.Angle != L.Angle) && (Rider.Angle != (L.Angle + 180)))
+                                
+                                // Änderung des Winkels?
+                                if (Rider.Angle != L.Angle)
                                 {
-                                    if ((L.Angle + (360 - Rider.Angle)) <= 90)
+                                    // 1. Fall: Winkel ist 0 oder 180 Grad
+                                    if (Rider.Angle == 0 || Rider.Angle == 180)
                                     {
                                         Rider.Angle = L.Angle;
                                     }
                                     else
                                     {
-                                        Rider.Angle = L.Angle + 180;
+                                        // 2. Fall: Winkel grösser als 180 Grad
+                                        if (Rider.Angle > 180)
+                                        {
+                                            // Richtung bestimmen
+                                            if (Math.Abs(180-Rider.Angle - L.Angle) <= 90)
+                                            {
+                                                Rider.Angle = L.Angle + 180;
+                                            }
+                                            else
+                                            {
+                                                Rider.Angle = L.Angle;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Richtung bestimmen
+                                            if (Math.Abs(Rider.Angle - L.Angle) <= 90)
+                                            {
+                                                Rider.Angle = L.Angle;
+                                            }
+                                            else
+                                            {
+                                                Rider.Angle = L.Angle + 180;
+                                            }
+                                        }
                                     }
                                 }
 
