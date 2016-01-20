@@ -71,7 +71,7 @@ namespace LineRider
         public Engine()
         {
             Lines = new List<Line>();
-            Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.skate_board_307418_640);
+            Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.skateboard_transparent);
             Acceleration = 1.0;
             Playtime = new TimeSpan();
             GameButtons = new List<GameButton>();
