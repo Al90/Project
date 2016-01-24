@@ -66,12 +66,32 @@ namespace LineRider
         public EventHandler LoadGame;
 
         /// <summary>
+        /// Maximalgeschwindigkeit
+        /// </summary>
+        public static double MAX_SPEED = 100;
+
+        /// <summary>
+        /// Winkel anzeigen
+        /// </summary>
+        public static bool SHOW_ANGLES = false;
+
+        /// <summary>
+        /// Spielergeschwindigkeit anzeigen
+        /// </summary>
+        public static bool SHOW_PLAYER_SPEED = false;
+
+        /// <summary>
+        /// Geschwindigkeit der Linien anzeigen
+        /// </summary>
+        public static bool SHOW_LINE_SPEED = false;
+
+        /// <summary>
         /// Konstruktor
         /// </summary>
         public Engine()
         {
             Lines = new List<Line>();
-            Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.skateboard_transparent);
+            Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.player_gerade);
             Acceleration = 1.0;
             Playtime = new TimeSpan();
             GameButtons = new List<GameButton>();
@@ -89,8 +109,6 @@ namespace LineRider
             GameButtons.Add(Load);
             State = EngineStates.Editor;
         }
-
-
 
         /// <summary>
         /// Grafik berechnen
@@ -110,7 +128,7 @@ namespace LineRider
             DateTime Starttime = DateTime.Now;
             Font Time_f = new Font("Arial",24f);
             Brush Time_b = new SolidBrush(Color.Blue);
-          
+            bool Clockwise = false;
 
             while(true)
             {
@@ -178,10 +196,10 @@ namespace LineRider
 
                 #endregion
 
-                #region Zeichnen
+                #region Berechnungen
 
                 // Berechnungen anstellen
-                if ((System.Environment.TickCount >= (TimeStamp + 100)) && (State == EngineStates.Run))
+                if ((System.Environment.TickCount >= (TimeStamp + 50)) && (State == EngineStates.Run))
                 {
                     // TimeStamp aktualisieren
                     TimeStamp = System.Environment.TickCount; 
@@ -190,22 +208,21 @@ namespace LineRider
                     Playtime = DateTime.Now - Starttime;
 
                     // Geschwindigkeit des Spielers rechnen
-                    //Rider.Speed = 10;
                     if (Rider.Contacted == null)
                     {
-                        // Freier Fall
+                        #region Freier Fall
                         double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI) - 1;
                         double x_speed = Rider.Speed * Math.Cos(Rider.Angle / 360 * 2 * Math.PI);
                         Rider.Speed = Math.Sqrt((y_speed * y_speed) + (x_speed * x_speed));
-
-                        if (Rider.Speed > 10)
+                        
+                        if (Rider.Speed > MAX_SPEED)
                         {
-                            double factor = 10 / Rider.Speed;
+                            double factor = MAX_SPEED / Rider.Speed;
                             y_speed = y_speed * factor;
                             x_speed = x_speed * factor;
-                            Rider.Speed = 10;
+                            Rider.Speed = MAX_SPEED;
                         }
-
+                        
                         if (Rider.Speed == 0)
                         {
                             Rider.Angle = 270;
@@ -225,39 +242,21 @@ namespace LineRider
                         {
                             Rider.Angle += 360;
                         }
+                        #endregion
                     }
                     else
                     {
-                        // Speed prüfen
+                        #region Auf Linie
+                        // Speed prüfen, falls zu klein, Spielerwinkel drehen
                         if (Rider.Speed == 0 || Math.Abs(Rider.Speed) < Rider.Contacted.acc)
                         {
                             Rider.Angle = (Rider.Angle + 180) % 360;
+
+                            // Loopingrichtung wechseln
+                            Clockwise = !Clockwise;
                         }
 
-                        // Fallunterscheidung
-                        //if (Rider.Angle >= 0 && Rider.Angle <= 90)
-                        //{
-                        //    Rider.Speed -= Rider.Contacted.acc;
-                        //}
-                        //else
-                        //{
-                        //    if (Rider.Angle > 90 && Rider.Angle < 180)
-                        //    {
-                        //        Rider.Speed += Rider.Contacted.acc;
-                        //    }
-                        //    else
-                        //    {
-                        //        if (Rider.Angle >= 180 && Rider.Angle <= 270)
-                        //        {
-                        //            Rider.Speed -= Rider.Contacted.acc;
-                        //        }
-                        //        else
-                        //        {
-                        //            Rider.Speed += Rider.Contacted.acc;
-                        //        }
-                        //    }
-                        //}
-
+                        // Je nach Winkel Beschleunigung addieren
                         if (Rider.Angle > 0 && Rider.Angle < 180)
                         {
                             Rider.Speed -= Rider.Contacted.acc;
@@ -269,93 +268,142 @@ namespace LineRider
                                 Rider.Speed += Rider.Contacted.acc;
                             }
                         }
+
+                        // speed begrenzen
+                        if (Rider.Speed > MAX_SPEED)
+                        {
+                            Rider.Speed = MAX_SPEED;
+                        }
+                        #endregion
                     }
 
-                    // Kontaktierte Linie berechnen
-                    double SmallestDistance = double.MaxValue;
-                    double Distance = double.MaxValue;
-                    foreach(Line L in Lines)
+                    #region Schneiden mit anderen Linien
+
+                    // Bewegungslinie rechnen
+                    PointF NextPos = getNextPosition(Rider);
+                    Line Movement = new Line();
+                    Movement.Start = new Point((int)Rider.Position.X, (int)Rider.Position.Y);
+                    Movement.End = new Point((int)NextPos.X, (int)NextPos.Y);
+
+                    // Schnittlinie und Schnittpunkt erstellen
+                    Line CutLine = Rider.Contacted;
+                    PointF CutPoint = Rider.Position;
+                    double NewAngle = Clockwise ? 360 : 0;
+
+                    // Schnittpunkt mit anderen linien prüfen
+                    foreach (Line L in Lines)
                     {
-                        // Prüfen ob Linie in der Nähe des Spielers ist
-                        if (inRange(Rider.Position, L))
+                        // Eigene Linie ignorieren
+                        if (L == Rider.Contacted)
                         {
-                            // Distanz zu Linie rechnen
-                            Distance = getDistanceF(Rider.Position, L);
+                            continue;
+                        }
 
-                            // Prüfen ob Distanz kleiner als kleinste Distanz und kleiner als 5
-                            if ((Distance < SmallestDistance) && (Distance < 5) && (Rider.Contacted != L))
+                        // Schnittpunkt zwischen der Linie und der Bewegungslinie berechnen
+                        PointF Cut = getCutPoint(Movement, L);
+
+                        // Schnittpunkt innerhalb der Bewegung?
+                        if (inRange(Cut, Movement) && inRange(Cut, L))
+                        {
+                            if (CutLine != null)
                             {
-                                // Kleinste Distanz aktualisieren
-                                SmallestDistance = Distance;
+                                // Winkel zwischen Kontaktierter und neuer Linie Rechnen
+                                double Angle = getNewAngle(CutLine.Angle, L);
 
-                               // Rider.Speed = Rider.Speed * 0.5;
-
-                                // Spielerwinkel rechnen
-                                
-                                // Änderung des Winkels?
-                                if (Rider.Angle != L.Angle)
+                                // Winkel des Spielers?
+                                if (Clockwise)
                                 {
-                                    // 1. Fall: Winkel ist 0 oder 180 Grad
-                                    if (Rider.Angle == 0 || Rider.Angle == 180)
+                                    if (Angle < NewAngle)
                                     {
-                                        Rider.Angle = L.Angle;
-                                    }
-                                    else
-                                    {
-                                        // 2. Fall: Winkel grösser als 180 Grad
-                                        if (Rider.Angle > 180)
-                                        {
-                                            // Richtung bestimmen
-                                            if (Math.Abs(180-Rider.Angle - L.Angle) <= 90)
-                                            {
-                                                Rider.Angle = L.Angle + 180;
-                                            }
-                                            else
-                                            {
-                                                Rider.Angle = L.Angle;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Richtung bestimmen
-                                            if (Math.Abs(Rider.Angle - L.Angle) <= 90)
-                                            {
-                                                Rider.Angle = L.Angle;
-                                            }
-                                            else
-                                            {
-                                                Rider.Angle = L.Angle + 180;
-                                            }
-                                        }
+                                        // Copy Line
+                                        CutLine = L;
+                                        CutPoint = Cut;
+                                        // Copy Angle
+                                        NewAngle = Angle;
                                     }
                                 }
-
-                                // Kontaktierte Linie setzen
-                                Rider.Contacted = L;
-                            }
-
-                            if (Rider.Contacted == L)
-                            {
-                                if (Distance > 10)
+                                else
                                 {
-                                    Rider.Contacted = null;
+                                    if (Angle > NewAngle)
+                                    {
+                                        // Copy Line
+                                        CutLine = L;
+                                        CutPoint = Cut;
+                                        // Copy Angle
+                                        NewAngle = Angle;
+                                    }
                                 }
                             }
+                            else
+                            {
+                                // Copy Line
+                                CutLine = L;
+                                CutPoint = Cut;
+                            }
+                        }
+                    }
+
+                    // Kontaktierte Linie zwischenspeichern
+                    Line Contacted_Old = Rider.Contacted;
+
+                    // Neue Kontaktierte Linie?
+                    if ((CutLine != null) && (CutLine != Rider.Contacted))
+                    {
+                        // Kontaktierte Linie wechseln
+                        Rider.Contacted = CutLine;
+
+                        // Spieler bewegen
+                        Rider.Position = CutPoint;
+                    }
+
+                    // Kontaktierte Linie vorhanden?
+                    if (Rider.Contacted != null)
+                    {
+                        // prüfen, ob Linie ausser Reichweite
+                        if (inRange(Rider.Position, Rider.Contacted) == false)
+                        {
+                            // Linie entfernt
+                            Rider.Contacted = null;
+                        }
+                    }
+
+                    #endregion
+
+                    #region Geschwindigkeitsänderung bei neuem Kontakt mit Linien
+
+                    // prüfen, ob sich kontaktierte linie geändert hat
+                    if(Contacted_Old != Rider.Contacted)
+                    {
+                        // kontaktierte linie hat sich verändert, nullprüfung?
+                        if(Rider.Contacted != null)
+                        {
+                            // linienwechsel, oder Fall auf linie, bei freiem fall auf linie, speed verkleinern
+                            if (Contacted_Old == null)
+                            {
+                                Rider.Speed = Rider.Speed * 0.8;
+                            }
+                            else
+                            {
+                                Rider.Speed = Rider.Speed * 0.9;
+                            }
+
+                            // Neuer Spielerwinkel rechnen
+                            Rider.Angle = getNewAngle(Rider.Angle, Rider.Contacted);
                         }
                         else
                         {
-                            if (Rider.Contacted == L)
-                            {
-                                Rider.Contacted = null;
-                            }
+                            // kein Kontakt mehr
                         }
                     }
+
+                    #endregion
+
+                    #region Linie Färben
 
                     // Abfrage Linie kontaktiert
                     if (Rider.Contacted != null)
                     {
-                        // Winkel der Linie kopieren
-                        // Rider.Angle = Rider.Contacted.Angle;
+                        // Kontaktierte Linie rot färben
                         Rider.Contacted.Color = Color.Red;
                     }
                     
@@ -367,7 +415,10 @@ namespace LineRider
                             x.Color = Color.Black;
                         }
                     });
-                    
+
+                    #endregion
+
+                    #region Bewegung des Spielers rechnen
 
                     // Verschiebung in X rechnen
                     Rider.Position.X += (float)(Rider.Speed * Math.Cos(Rider.Angle * Math.PI / 180));
@@ -385,8 +436,13 @@ namespace LineRider
                         Rider.Speed = 0;
                         Play.Clicked = false;
                     }
+
+                    #endregion
                 }
 
+                #endregion
+
+                #region Zeichnen
 
                 // Hintergrund zeichnen
                 f_handle.Clear(Color.Orange);
@@ -404,7 +460,7 @@ namespace LineRider
                 Rider.Draw(f_handle, Offset, Origin);
 
                 // Spielzeitzähler 
-                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss"), Time_f, Time_b, 10f, 556f);
+                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss") + (Clockwise ? " Clockwise" : "Unclockwise"), Time_f, Time_b, 10f, 556f);
 
                 // Menu
                 GameButtons.ForEach(x => x.Draw(f_handle));
@@ -443,6 +499,7 @@ namespace LineRider
                                 }
                                 Ground -= 100;
                             }
+                            Clockwise = false;
                         }
                     }
                     else
@@ -532,59 +589,133 @@ namespace LineRider
             }
         }
 
-        private double getDistance(PointF P, Line L)
+        /// <summary>
+        /// Berechnen des neuen Winkels, wenn ein Übergang zu einer neuen Linie stattfindet
+        /// </summary>
+        /// <param name="Angle">Aktueller Winkel</param>
+        /// <param name="Contact">Neu kontaktierte Linie</param>
+        /// <returns>Der neue Winkel des Spielers</returns>
+        private double getNewAngle(double Angle, Line Contact)
         {
-            Point V = new Point((int)(L.End.X - L.Start.X),(int)(L.End.Y - L.Start.Y));
-            Point W = new Point((int)(P.X - L.Start.X), (int)(P.Y - L.Start.Y));
+            // 1. Winkel auf Linie kippen
+            double Relative_Angle = Angle - Contact.Angle;
 
-            double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
-            double c2 = (double)V.X * V.X + (double)V.Y * V.Y;
-            double b = c1 / c2;
+            // 1a. Normieren auf positive Winkel
+            if (Relative_Angle < 0)
+            {
+                Relative_Angle += 360;
+            }
 
-            double Pbx = L.Start.X + b * V.X;
-            double Pby = L.Start.Y + b * V.Y;
-            double Pnx = P.X - Pbx;
-            double Pny = P.Y - Pby;
-            return Math.Sqrt(Pnx * Pnx + Pny * Pny);
+            // 2. Linienkontakt oben oder unten unterscheiden
+            if (Relative_Angle >= 180)
+            {
+                // Kontakt von oben
+                Relative_Angle -= 180;
+
+                // 3. Unterscheiden zwischen links und rechts
+                if (Relative_Angle < 90)
+                {
+                    // Bewegung nach links, Linienwinkel umkehren
+                    return Contact.Angle + 180;
+                }
+                else
+                {
+                    // Bewegung nach rechts, Linienwinkel übernehmen
+                    return Contact.Angle;
+                }
+            }
+            else
+            {
+                // Kontakt von unten
+
+                // 3. Unterscheiden zwischen links und rechts
+                if (Relative_Angle > 90)
+                {
+                    // Bewegung nach links, Linienwinkel umkehren
+                    return Contact.Angle + 180;
+                }
+                else
+                {
+                    // Bewegung nach rechts, Linienwinkel übernehmen
+                    return Contact.Angle;
+                }
+            }
         }
 
         /// <summary>
-        /// Distanz von einem Punkt zu einer Geraden durch zwei Punkte
+        /// Nächste Spielerposition rechnen
         /// </summary>
-        /// <param name="P">Punkt</param>
-        /// <param name="L">Gerade</param>
-        /// <returns>Distanz</returns>
-        private double getDistanceF(PointF P, Line L)
+        /// <param name="pl">Spieler</param>
+        /// <returns>Spielerposition</returns>
+        private PointF getNextPosition(Player pl)
         {
-            PointF V = new PointF(L.End.X - L.Start.X, L.End.Y - L.Start.Y);
-            PointF W = new PointF(P.X - L.Start.X, P.Y - L.Start.Y);
+            // Neuer Punkt erstellen
+            PointF Next = new Point();
+            // Verschiebung in X rechnen
+            Next.X = pl.Position.X + (float)(pl.Speed * Math.Cos(pl.Angle * Math.PI / 180));
 
-            double c1 = (double)W.X * V.X + (double)W.Y * V.Y;
-            double c2 = (double)V.X * V.X + (double)V.Y * V.Y;
-            double b = c1 / c2;
+            // Verschiebung in Y rechnen
+            Next.Y = pl.Position.Y + (float)(pl.Speed * Math.Sin(pl.Angle * Math.PI / 180));
 
-            double Pbx = L.Start.X + b * V.X;
-            double Pby = L.Start.Y + b * V.Y;
-            double Pnx = P.X - Pbx;
-            double Pny = P.Y - Pby;
-            return Math.Sqrt(Pnx * Pnx + Pny * Pny);
+            // Punkt zurückgeben
+            return Next;
         }
 
+        /// <summary>
+        /// Berechnen des Schnittpunkts zwischen der Linie A und B
+        /// </summary>
+        /// <param name="A">Linie A</param>
+        /// <param name="B">Linie B</param>
+        /// <returns>Schnittpunkt oder leerer Punkt</returns>
+        private PointF getCutPoint(Line A, Line B)
+        {
+            // Schnittvariablen berechnen
+            double D = ((double)A.End.X - (double)A.Start.X) * ((double)B.Start.Y - (double)B.End.Y) - ((double)B.Start.X - (double)B.End.X) * ((double)A.End.Y - (double)A.Start.Y);
+            double m = (((double)B.Start.X - (double)A.Start.X) * ((double)B.Start.Y - (double)B.End.Y) - ((double)B.Start.X - (double)B.End.X) * ((double)B.Start.Y - (double)A.Start.Y)) / D;
+            double n = (((double)A.End.X - (double)A.Start.X) * ((double)B.Start.X - (double)A.Start.X) - ((double)B.Start.Y - (double)A.Start.Y) * ((double)A.End.Y - (double)A.Start.Y)) / D;
+
+            // Linien parallel
+            if(D == 0)
+            {
+                // Parallele Linien, leerer Punkt zurückgeben
+                return new PointF();
+            }
+            else
+            {
+                // Schnittpunkt auf Linie?
+                if((m >= 0) && (n <= 1))
+                {
+                    // Schnittpunkt zurückgeben
+                    return new PointF((float)((double)A.Start.X + m * ((double)A.End.X - (double)A.Start.X)), (float)((double)A.Start.Y + m * ((double)A.End.Y - (double)A.Start.Y)));
+                }
+                else
+                {
+                    // No cutpoint, return empty point
+                    return new PointF();
+                }
+            }
+        }
+        
         /// <summary>
         /// Prüfen ob Punkt im Bereich des rechteckigen Bereiches der Linie ist
         /// </summary>
         /// <param name="P">Punkt</param>
         /// <param name="L">Linie</param>
+        /// <param name="Range">Abweichung in Pixel</param>
         /// <returns>true wenn im Bereich</returns>
-        private bool inRange(PointF P, Line L)
+        private bool inRange(PointF P, Line L, float Range = 2f)
         {
+            if(L == null)
+            {
+                return false;
+            }
             if (L.End.X > L.Start.X)
             {
-                if (((P.X+5) >= L.Start.X) && ((P.X-5) <= L.End.X))
+                if (((P.X + Range) >= L.Start.X) && ((P.X - Range) <= L.End.X))
                 {
                     if (L.End.Y > L.Start.Y)
                     {
-                        if (((P.Y+5) >= L.Start.Y) && ((P.Y-5) <= L.End.Y))
+                        if (((P.Y + Range) >= L.Start.Y) && ((P.Y - Range) <= L.End.Y))
                         {
                             return true;
                         }
@@ -595,7 +726,7 @@ namespace LineRider
                     }
                     else
                     {
-                        if (((P.Y-5) <= L.Start.Y) && ((P.Y+5) >= L.End.Y))
+                        if (((P.Y - Range) <= L.Start.Y) && ((P.Y + Range) >= L.End.Y))
                         {
                             return true;
                         }
@@ -612,11 +743,11 @@ namespace LineRider
             }
             else
             {
-                if (((P.X-5) <= L.Start.X) && ((P.X+5) >= L.End.X))
+                if (((P.X - Range) <= L.Start.X) && ((P.X + Range) >= L.End.X))
                 {
                     if (L.End.Y > L.Start.Y)
                     {
-                        if (((P.Y+5) >= L.Start.Y) && ((P.Y-5) <= L.End.Y))
+                        if (((P.Y + Range) >= L.Start.Y) && ((P.Y - Range) <= L.End.Y))
                         {
                             return true;
                         }
@@ -627,7 +758,7 @@ namespace LineRider
                     }
                     else
                     {
-                        if (((P.Y-5) <= L.Start.Y) && ((P.Y+5) >= L.End.Y))
+                        if (((P.Y - Range) <= L.Start.Y) && ((P.Y + Range) >= L.End.Y))
                         {
                             return true;
                         }
@@ -671,8 +802,6 @@ namespace LineRider
             Render = new Thread(RenderGraphics);
             Render.Name = "EngineRender";
             Render.Start();
-
-
         }
     }
 }

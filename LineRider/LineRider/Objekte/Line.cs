@@ -40,7 +40,7 @@ namespace LineRider
             }
             set
             {
-                Style = new Pen(value);
+                Style = new Pen(value, 2f);
             }
         }
 
@@ -60,7 +60,7 @@ namespace LineRider
             Start = new Point();
             End = new Point();
             Calculate();
-            Style = new Pen(Color.Black);
+            Style = new Pen(Color.Black, 2f);
             Text_Font = new Font("Arial", 12f, FontStyle.Regular);
             Text_Brush = new SolidBrush(Color.Blue);
             acc = 0;
@@ -144,7 +144,19 @@ namespace LineRider
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
             g.DrawLine(Style, Offset.X + Origin.X + Start.X, Offset.Y - Origin.Y - Start.Y, Offset.X + Origin.X + End.X, Offset.Y - Origin.Y - End.Y);
-            g.DrawString(Angle.ToString() + "°\n" + acc.ToString(), Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Start.X)), (int)(Offset.Y - (Origin.Y + Start.Y)));
+
+            // check for drawing angles and acceleration
+            string Details = "";
+            if(Engine.SHOW_ANGLES)
+            {
+                Details += Angle.ToString() + "°\n";
+            }
+            if(Engine.SHOW_LINE_SPEED)
+            {
+                Details += acc.ToString() + "\n";
+            }
+
+            g.DrawString(Details, Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Start.X)), (int)(Offset.Y - (Origin.Y + Start.Y)));
         }
     }
 }

@@ -230,7 +230,7 @@ namespace Physics_Test
                     Mirror.End.Y = (int)((Length / 2) * Math.Cos(Angle / 360 * 2 * Math.PI) + The.End.Y);
 
                     // inkrement angle
-                    Angle += 1;
+                    //Angle += 1;
                 }
 
                 // calculate fps

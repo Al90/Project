@@ -91,7 +91,7 @@ namespace LineRider
         /// </summary>
         public void Handle_UI(UI_Message Message)
         {
-            if (Enabled)
+            if (Enabled && (Message != null))
             {
                 switch (Message.Type)
                 {

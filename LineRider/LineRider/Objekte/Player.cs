@@ -55,8 +55,22 @@ namespace LineRider
         /// <param name="Origin">Koordinatennullpunkt</param>
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
+            // draw player image
             g.DrawImage(Image, (int)(Offset.X + (Origin.X + Position.X) - 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size), Size, Size);
-            g.DrawString(Angle.ToString() + "°\n"+ Speed.ToString(), Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Position.X) + 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size));
+
+            // check for drawing angles and acceleration
+            string Details = "";
+            if (Engine.SHOW_ANGLES)
+            {
+                Details += Angle.ToString() + "°\n";
+            }
+            if (Engine.SHOW_PLAYER_SPEED)
+            {
+                Details += Speed.ToString() + "\n";
+            }
+
+            // draw details
+            g.DrawString(Details, Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Position.X) + 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size));
             
         }
     }
