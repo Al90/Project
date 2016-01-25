@@ -13,7 +13,7 @@ namespace LineRider
 {
     public partial class MainWindow : Form
     {
-        private Engine Engine;
+        private Engine engine;
 
         public MainWindow()
         {
@@ -22,24 +22,24 @@ namespace LineRider
 
         ~MainWindow()
         {
-            if (Engine != null)
+            if (engine != null)
             {
-                Engine.Stop();
+                engine.Stop();
             }
         }
 
         private void pnlEngine_Paint(object sender, PaintEventArgs e)
         {
-            if(Engine != null)
+            if(engine != null)
             {
-                Engine.Stop();
+                engine.Stop();
             }
 
-            Engine = new Engine();
-            Engine.Start(pnlEngine.CreateGraphics());
+            engine = new Engine();
+            engine.Start(pnlEngine.CreateGraphics());
 
-            Engine.SaveGame += SaveLineRiderGame;
-            Engine.LoadGame += LoadLineRiderGame;
+            engine.SaveGame += SaveLineRiderGame;
+            engine.LoadGame += LoadLineRiderGame;
 
         }
 
@@ -65,10 +65,10 @@ namespace LineRider
                     StreamReader Reader;
                     Reader = new StreamReader(Dialog.FileName);
                     string[] Split = Reader.ReadLine().Split(';');
-                    Engine.Rider.Position.X = Convert.ToInt32(Split[0]);
-                    Engine.Rider.Position.Y = Convert.ToInt32(Split[1]);
+                    engine.Rider.Position.X = Convert.ToInt32(Split[0]);
+                    engine.Rider.Position.Y = Convert.ToInt32(Split[1]);
                     // Vorhandene Linien löschen
-                    Engine.Lines.Clear();
+                    engine.Lines.Clear();
 
                     while(Reader.EndOfStream == false)
                     {
@@ -81,12 +81,12 @@ namespace LineRider
                         line.End.X = Convert.ToInt32(End[0]);
                         line.End.Y = Convert.ToInt32(End[1]);
                         line.Calculate();
-                        Engine.Lines.Add(line);
+                        engine.Lines.Add(line);
                     }
                     Reader.Close();
 
                 }
-                Engine.State = EngineStates.Editor;
+                engine.State = EngineStates.Editor;
             });
         }
 
@@ -113,8 +113,8 @@ namespace LineRider
                     // Datei speichern
                     StreamWriter Writer;
                     Writer = new StreamWriter(Dialog.FileName);
-                    Writer.WriteLine(Engine.Rider.Position.X.ToString() + ";" + Engine.Rider.Position.Y.ToString());
-                    foreach (Line line in Engine.Lines)
+                    Writer.WriteLine(engine.Rider.Position.X.ToString() + ";" + engine.Rider.Position.Y.ToString());
+                    foreach (Line line in engine.Lines)
                     {
                     Writer.WriteLine(line.Start.X.ToString() + ";" + line.Start.Y.ToString() + "|" + line.End.X.ToString() + ";" + line.End.Y.ToString());
                     }
@@ -122,7 +122,7 @@ namespace LineRider
                     Writer.Close();
 
                 }
-                Engine.State = EngineStates.Editor;
+                engine.State = EngineStates.Editor;
             });
         }
 
@@ -133,20 +133,20 @@ namespace LineRider
         /// <param name="e"></param>
         private void pnlEngine_MouseMove(object sender, MouseEventArgs e)
         {
-            if (Engine != null)
+            if (engine != null)
             {
                 UI_Message Message = new UI_Message();
                 Message.Position = e.Location;
                 Message.Type = UI_Message.Clicktype.Move;
-                Engine.PlaceMessage(Message);
+                engine.PlaceMessage(Message);
             }
         }
 
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (Engine != null)
+            if (engine != null)
             {
-                Engine.Stop();
+                engine.Stop();
             }
         }
 
@@ -154,12 +154,23 @@ namespace LineRider
         {
             if(e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                if (Engine != null)
+                if (engine != null)
                 {
                     UI_Message Message = new UI_Message();
                     Message.Position = e.Location;
                     Message.Type = UI_Message.Clicktype.Left;
-                    Engine.PlaceMessage(Message);
+                    engine.PlaceMessage(Message);
+                }
+            }
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                if (engine != null)
+                {
+                    UI_Message Message = new UI_Message();
+                    Message.Position = e.Location;
+                    Message.Type = UI_Message.Clicktype.Right;
+                    engine.PlaceMessage(Message);
                 }
             }
 
@@ -167,12 +178,20 @@ namespace LineRider
 
         private void pnlEngine_MouseUp(object sender, MouseEventArgs e)
         {
-            if (Engine != null)
+            if (engine != null)
             {
                 UI_Message Message = new UI_Message();
                 Message.Position = e.Location;
                 Message.Type = UI_Message.Clicktype.Released;
-                Engine.PlaceMessage(Message);
+                engine.PlaceMessage(Message);
+            }
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (engine != null)
+            {
+                engine.MoveOrigin(e.KeyCode, 100);
             }
         }
     }

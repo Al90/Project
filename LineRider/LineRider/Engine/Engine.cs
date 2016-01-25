@@ -436,6 +436,12 @@ namespace LineRider
                         Rider.Speed = 0;
                         Play.Clicked = false;
                     }
+                    else
+                    {
+                        // Verschiebung Ursprungskoordinaten
+                        Origin.X = -(int)Rider.Position.X + 400;
+                        Origin.Y = -(int)Rider.Position.Y + 300;
+                    }
 
                     #endregion
                 }
@@ -460,7 +466,7 @@ namespace LineRider
                 Rider.Draw(f_handle, Offset, Origin);
 
                 // Spielzeitzähler 
-                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss") + (Clockwise ? " Clockwise" : "Unclockwise"), Time_f, Time_b, 10f, 556f);
+                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss") + " X:" +Origin.X.ToString()+" Y:"+Origin.Y.ToString(), Time_f, Time_b, 10f, 556f);
 
                 // Menu
                 GameButtons.ForEach(x => x.Draw(f_handle));
@@ -477,6 +483,7 @@ namespace LineRider
                 {
                     // Nachricht aus Postfach holen
                     UI_Message Message = Messages.Dequeue();
+
                     // Schauen, welcher Button geklickt wurde
                     GameButtons.ForEach(x => x.Handle_UI(Message));
 
@@ -511,6 +518,9 @@ namespace LineRider
                             Rider.Position.Y = 500;
                             Rider.Angle = 270f;
                             Rider.Speed = 0;
+                            // Verschiebung Nullpunkt auf Null
+                            Origin.X = 0;
+                            Origin.Y = 0;
                         }
                         else
                         {
@@ -548,17 +558,23 @@ namespace LineRider
                                 // Mit einem Linksklick wird der Start einer Linie markiert
                             case UI_Message.Clicktype.Left:
                                 flag_linestart = true;
-                                Editorline.Start.X = Offset.X + Origin.X + Message.Position.X;
+                                Editorline.Start.X = Offset.X - Origin.X + Message.Position.X;
                                 Editorline.Start.Y = Offset.Y - Origin.Y - Message.Position.Y;
                                 Editorline.End.X = Editorline.Start.X;
                                 Editorline.End.Y = Editorline.Start.Y;
+                                break;
+
+                            // Mit einem Rechtsklick wird eine Linie gelöscht
+                            case UI_Message.Clicktype.Right:
+                                Point Shifted = new Point(Offset.X - Origin.X + Message.Position.X, Offset.Y - Origin.Y - Message.Position.Y);
+                                deleteLine(Shifted);
                                 break;
 
                                 // Mit dem bewegen der Maus wird der Endpunkt verschoben 
                             case UI_Message.Clicktype.Move:
                                 if (flag_linestart)
                                 {
-                                    Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                                    Editorline.End.X = Offset.X - Origin.X + Message.Position.X;
                                     Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
                                     Editorline.Calculate();
                                 }
@@ -568,7 +584,7 @@ namespace LineRider
                             case UI_Message.Clicktype.Released:
                                 if (flag_linestart)
                                 {
-                                    Editorline.End.X = Offset.X + Origin.X + Message.Position.X;
+                                    Editorline.End.X = Offset.X - Origin.X + Message.Position.X;
                                     Editorline.End.Y = Offset.Y - Origin.Y - Message.Position.Y;
                                     flag_lineend = true;
                                 }
@@ -695,7 +711,91 @@ namespace LineRider
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Löschen der Linie die angeklickt wurde
+        /// </summary>
+        /// <param name="Click">Klickpunkt</param>
+        /// <param name="Range">Abweichung</param>
+        private void deleteLine(Point Click, int Range = 3)
+        {
+            foreach (Line L in Lines)
+            {
+                // Spezialfall senkrechte Linie prüfen
+                if (Math.Abs(L.Start.X - L.End.X) < Range)
+                {
+                    #region Behandlung senkrechte Linie
+                    if (L.Start.Y > L.End.Y)
+                    {
+                        if (((L.Start.Y + Range) > Click.Y) && ((L.End.Y - Range) < Click.Y))
+                        {
+                            // Linie wurde geklickt = löschen
+                            Lines.Remove(L);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (((L.Start.Y - Range) < Click.Y) && ((L.End.Y + Range) > Click.Y))
+                        {
+                            // Linie wurde geklickt = löschen
+                            Lines.Remove(L);
+                            break;
+                        }
+                    }
+                    #endregion
+                }
+                else
+                {
+                    #region Klickposition auf X-Achse
+                    // Prüfen ob Klickposition auf X-Achse der Linie ist
+                    if (L.Start.X > L.End.X)
+                    {
+                        if (((L.Start.X + Range) > Click.X) && ((L.End.X - Range) < Click.X))
+                        {
+
+                        }
+                        else
+                        {
+                            // Zur nächsten Linie wechseln
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (((L.Start.X - Range) < Click.X) && ((L.End.X + Range) > Click.X))
+                        {
+
+                        }
+                        else
+                        {
+                            // Zur nächsten Linie wechseln
+                            continue;
+                        }
+                    }
+                    #endregion
+
+                    // Steigung berechnen
+                    double slope = (double)(L.End.Y - L.Start.Y) / (double)(L.End.X - L.Start.X);
+
+                    // Verschiebung berechnen
+                    double shift = (double)L.Start.Y - L.Start.X * slope;
+
+                    // Klickpunkt auf Linie berechnen (Y)
+                    double y_line = shift + Click.X * slope;
+
+                    // Prüfen ob Mausklick und Klickpunkt gleich sind
+                    if (((Click.Y - Range) < y_line) && ((Click.Y + Range) > y_line))
+                    {
+                        // Linie wurde geklickt = löschen
+                        Lines.Remove(L);
+                        break;
+                    }
+                }
+            }
+        }
+
+
         /// <summary>
         /// Prüfen ob Punkt im Bereich des rechteckigen Bereiches der Linie ist
         /// </summary>
@@ -802,6 +902,34 @@ namespace LineRider
             Render = new Thread(RenderGraphics);
             Render.Name = "EngineRender";
             Render.Start();
+        }
+
+        public void MoveOrigin(Keys keys, int p)
+        {
+            if (State == EngineStates.Editor)
+            {
+                switch (keys)
+                {
+                    case Keys.Right:
+                        Origin.X -= p;
+                        break;
+
+                    case Keys.Left:
+                        Origin.X += p;
+                        break;
+
+                    case Keys.Up:
+                        Origin.Y -= p;
+                        break;
+
+                    case Keys.Down:
+                        Origin.Y += p;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
     }
 }
