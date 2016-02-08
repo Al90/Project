@@ -48,6 +48,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>LineRider.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -142,6 +145,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\player_gerade.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\grabstein.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="LineRider.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

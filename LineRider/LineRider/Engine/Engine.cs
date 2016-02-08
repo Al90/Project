@@ -20,10 +20,6 @@ namespace LineRider
         /// </summary>
         public Player Rider;
         /// <summary>
-        /// Allgemeine Beschleunigung
-        /// </summary>
-        private double Acceleration;
-        /// <summary>
         /// Thread in dem die einzelnen Frames des Spiels gerechnet werden
         /// </summary>
         private Thread Render;
@@ -47,6 +43,7 @@ namespace LineRider
         /// Gerendertes Frame
         /// </summary>
         private Bitmap Frame;
+        private List<PointF> Deadpoints;
         /// <summary>
         /// Nachrichtenqueue (Postfach) für Benutzereingaben
         /// </summary>
@@ -85,6 +82,10 @@ namespace LineRider
         /// </summary>
         public static bool SHOW_LINE_SPEED = false;
 
+        private AutoResetEvent Move;
+        public AutoResetEvent Process;
+        private System.Windows.Forms.Timer MoveTimer;
+
         /// <summary>
         /// Konstruktor
         /// </summary>
@@ -92,7 +93,6 @@ namespace LineRider
         {
             Lines = new List<Line>();
             Rider = new Player(new Point(100,500),60,global::LineRider.Properties.Resources.player_gerade);
-            Acceleration = 1.0;
             Playtime = new TimeSpan();
             GameButtons = new List<GameButton>();
             Origin = new Point();
@@ -108,6 +108,19 @@ namespace LineRider
             GameButtons.Add(Save);
             GameButtons.Add(Load);
             State = EngineStates.Editor;
+            Deadpoints = new List<PointF>();
+            Move = new AutoResetEvent(false);
+            Process = new AutoResetEvent(true);
+            MoveTimer = new System.Windows.Forms.Timer();
+            MoveTimer.Interval = 50;
+            MoveTimer.Tick += MoveTimer_Tick;
+            MoveTimer.Start();
+        }
+
+        void MoveTimer_Tick(object sender, EventArgs e)
+        {
+            Move.Set();
+            Process.Set();
         }
 
         /// <summary>
@@ -123,15 +136,18 @@ namespace LineRider
             bool flag_linestart = false;
             bool flag_lineend = false;
             Line Editorline = new Line();
-            int TimeStamp = 0;
             int Ground = 0;
             DateTime Starttime = DateTime.Now;
             Font Time_f = new Font("Arial",24f);
             Brush Time_b = new SolidBrush(Color.Blue);
             bool Clockwise = false;
+            Bitmap Stone = global::LineRider.Properties.Resources.grabstein;
 
             while(true)
             {
+                // Auf Verarbeitungsbefehl warten
+                Process.WaitOne(100);
+
                 #region Spielzustand
 
                 // Spielzustand
@@ -199,11 +215,8 @@ namespace LineRider
                 #region Berechnungen
 
                 // Berechnungen anstellen
-                if ((System.Environment.TickCount >= (TimeStamp + 50)) && (State == EngineStates.Run))
+                if ((Move.WaitOne(0) == true) && (State == EngineStates.Run))
                 {
-                    // TimeStamp aktualisieren
-                    TimeStamp = System.Environment.TickCount; 
-
                     // Fahrdauer rechnen
                     Playtime = DateTime.Now - Starttime;
 
@@ -429,6 +442,12 @@ namespace LineRider
                     // Feststellen ob Spiel zu ende ist
                     if (Rider.Position.Y < Ground)
                     {
+                        // Spieler Tod position merken
+                        Deadpoints.Add(Rider.Position);
+                        while (Deadpoints.Count > 11)
+                        {
+                            Deadpoints.RemoveAt(0);
+                        }
                         State = EngineStates.Editor;
                         Rider.Position.X = 100;
                         Rider.Position.Y = 500;
@@ -451,7 +470,7 @@ namespace LineRider
                 #region Zeichnen
 
                 // Hintergrund zeichnen
-                f_handle.Clear(Color.Orange);
+                f_handle.Clear(Color.Honeydew);
 
                 // Linien zeichnen
                 Lines.ForEach(x=>x.Draw(f_handle, Offset, Origin));
@@ -462,11 +481,17 @@ namespace LineRider
                     Editorline.Draw(f_handle, Offset, Origin);
                 }
 
+                // Grabsteine zeichnen
+                foreach (PointF Pos in Deadpoints)
+                {
+                    f_handle.DrawImage(Stone, (int)(Offset.X + (Origin.X + Pos.X) - 0.5 * 30.55), (int)(Offset.Y - (Origin.Y + Pos.Y) - 0.5 * 36), 30.55f, 36f);
+                }
+
                 // Spieler zeichnen
                 Rider.Draw(f_handle, Offset, Origin);
 
                 // Spielzeitzähler 
-                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss") + " X:" +Origin.X.ToString()+" Y:"+Origin.Y.ToString(), Time_f, Time_b, 10f, 556f);
+                f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss"), Time_f, Time_b, 10f, 556f);
 
                 // Menu
                 GameButtons.ForEach(x => x.Draw(f_handle));
@@ -893,6 +918,7 @@ namespace LineRider
         public void PlaceMessage(UI_Message Message)
         {
             Messages.Enqueue(Message); // Nachricht in Postfach legen
+            Process.Set(); // Prozessflag setzen
         }
 
         public void Start(Graphics graphics)
@@ -929,6 +955,8 @@ namespace LineRider
                     default:
                         break;
                 }
+
+                Process.Set(); // Prozessflag setzen
             }
         }
     }

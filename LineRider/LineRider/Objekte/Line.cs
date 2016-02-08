@@ -49,7 +49,6 @@ namespace LineRider
         /// <summary>
         /// Max. Beschleunigung
         /// </summary>
-        private static double ACC = 1;
         public double acc;
 
         /// <summary>

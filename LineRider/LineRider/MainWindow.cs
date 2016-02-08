@@ -69,6 +69,7 @@ namespace LineRider
                     engine.Rider.Position.Y = Convert.ToInt32(Split[1]);
                     // Vorhandene Linien löschen
                     engine.Lines.Clear();
+                    engine.Process.Set();
 
                     while(Reader.EndOfStream == false)
                     {
@@ -82,11 +83,13 @@ namespace LineRider
                         line.End.Y = Convert.ToInt32(End[1]);
                         line.Calculate();
                         engine.Lines.Add(line);
+                        engine.Process.Set();
                     }
                     Reader.Close();
 
                 }
                 engine.State = EngineStates.Editor;
+                engine.Process.Set();
             });
         }
 
@@ -123,6 +126,7 @@ namespace LineRider
 
                 }
                 engine.State = EngineStates.Editor;
+                engine.Process.Set();
             });
         }
 
