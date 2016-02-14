@@ -1,8 +1,8 @@
-﻿////////////////////////////////////////////////////
-// Projekt Linerider // Simon Müller              //
-// FEE012            // Hard- und Softwaretechnik //
-// 23.11.2015        // V0.0.0                    //
-////////////////////////////////////////////////////
+﻿/////////////////////////////////////////////////////
+// Projekt LineRider  // Simon Müller              //
+// ET2012a            // Hard- und Softwaretechnik //
+// 28.01.2016         // V1.0.0                    //
+/////////////////////////////////////////////////////
 
 using System;
 using System.Collections.Generic;

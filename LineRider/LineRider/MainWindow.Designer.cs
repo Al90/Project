@@ -53,8 +53,9 @@
             this.Controls.Add(this.pnlEngine);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
+            this.MaximizeBox = false;
             this.Name = "MainWindow";
-            this.Text = "LineRider by S.Müller";
+            this.Text = "LineRider by Simon Müller";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainWindow_KeyDown);
             this.ResumeLayout(false);
