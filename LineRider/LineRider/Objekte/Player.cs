@@ -62,7 +62,7 @@ namespace LineRider
         public void Draw(Graphics g, Point Offset, Point Origin)
         {
             // draw player image
-            g.DrawImage(Image, (int)(Offset.X + (Origin.X + Position.X) - 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size), Size, Size);
+            g.DrawImage(Image, (int)(Offset.X + (Origin.X + Position.X) - 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.8 * Size), Size, Size);
 
             // check for drawing angles and acceleration
             string Details = "";
@@ -76,8 +76,10 @@ namespace LineRider
             }
 
             // draw details
-            g.DrawString(Details, Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Position.X) + 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size));
-            
+            if (Details != "")
+            {
+                g.DrawString(Details, Text_Font, Text_Brush, (int)(Offset.X + (Origin.X + Position.X) + 0.5 * Size), (int)(Offset.Y - (Origin.Y + Position.Y) - 0.5 * Size));
+            }
         }
     }
 }

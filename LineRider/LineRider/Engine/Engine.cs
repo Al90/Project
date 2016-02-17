@@ -5,6 +5,7 @@
 /////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -21,51 +22,90 @@ namespace LineRider
         /// Alle Linien
         /// </summary>
         public List<Line> Lines;
+
         /// <summary>
         /// Spieler
         /// </summary>
         public Player Rider;
+
         /// <summary>
         /// Thread in dem die einzelnen Frames des Spiels gerechnet werden
         /// </summary>
         private Thread Render;
+
         /// <summary>
         /// Handle zur Grafik welche mit den Frames überzeichnet wird
         /// </summary>
         private Graphics g;
+
         /// <summary>
         /// Spieldauer
         /// </summary>
         private TimeSpan Playtime;
+
         /// <summary>
         /// Alle Buttons
         /// </summary>
         private List<GameButton> GameButtons;
+
         /// <summary>
         /// Ursprung
         /// </summary>
         private Point Origin;
+
         /// <summary>
         /// Gerendertes Frame
         /// </summary>
         private Bitmap Frame;
+
+        /// <summary>
+        /// Deadpoints
+        /// </summary>
         private List<PointF> Deadpoints;
+
         /// <summary>
         /// Nachrichtenqueue (Postfach) für Benutzereingaben
         /// </summary>
-        private Queue<UI_Message> Messages;
+        private ConcurrentQueue<UI_Message> Messages;
 
+        /// <summary>
+        /// Play button
+        /// </summary>
         private GameButton Play;
+
+        /// <summary>
+        /// Pause button
+        /// </summary>
         private GameButton Pause;
+
+        /// <summary>
+        /// Save button
+        /// </summary>
         private GameButton Save;
+
+        /// <summary>
+        /// Load button
+        /// </summary>
         private GameButton Load;
+
+        /// <summary>
+        /// Offset point
+        /// </summary>
         private Point Offset;
+
         /// <summary>
         /// Globaler Spielzustand
         /// </summary>
         public EngineStates State;
 
+        /// <summary>
+        /// Event handler for saving the game
+        /// </summary>
         public EventHandler SaveGame;
+
+        /// <summary>
+        /// Event handler for loading a game
+        /// </summary>
         public EventHandler LoadGame;
 
         /// <summary>
@@ -88,8 +128,19 @@ namespace LineRider
         /// </summary>
         public static bool SHOW_LINE_SPEED = false;
 
+        /// <summary>
+        /// Move event
+        /// </summary>
         private AutoResetEvent Move;
+
+        /// <summary>
+        /// Process event
+        /// </summary>
         public AutoResetEvent Process;
+
+        /// <summary>
+        /// Render timing timer
+        /// </summary>
         private System.Windows.Forms.Timer MoveTimer;
 
         /// <summary>
@@ -102,7 +153,7 @@ namespace LineRider
             Playtime = new TimeSpan();
             GameButtons = new List<GameButton>();
             Origin = new Point();
-            Messages = new Queue<UI_Message>();
+            Messages = new ConcurrentQueue<UI_Message>();
             Offset = new Point(0, 600);
             int Size = 40;
             Play = new GameButton(new Point((int)(800 / 2 - (2 * Size + 1.5 * 10)), 10), Size, true, global::LineRider.Properties.Resources.Button_Play_icon);
@@ -123,6 +174,11 @@ namespace LineRider
             MoveTimer.Start();
         }
 
+        /// <summary>
+        /// Render tick
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void MoveTimer_Tick(object sender, EventArgs e)
         {
             Move.Set();
@@ -144,12 +200,13 @@ namespace LineRider
             Line Editorline = new Line();
             int Ground = 0;
             DateTime Starttime = DateTime.Now;
-            Font Time_f = new Font("Arial",24f);
+            Font Time_f = new Font("Arial", 24f);
             Brush Time_b = new SolidBrush(Color.Blue);
             bool Clockwise = false;
             Bitmap Stone = global::LineRider.Properties.Resources.grabstein;
+            Brush Time_rect = new SolidBrush(Color.Salmon);
 
-            while(true)
+            while (true)
             {
                 // Auf Verarbeitungsbefehl warten
                 Process.WaitOne(100);
@@ -157,7 +214,7 @@ namespace LineRider
                 #region Spielzustand
 
                 // Spielzustand
-                switch(State)
+                switch (State)
                 {
                     default:
                     case EngineStates.Editor:
@@ -171,7 +228,7 @@ namespace LineRider
                         Pause.State = true;
                         Play.State = false;
 
-                        if(flag_lineend)
+                        if (flag_lineend)
                         {
                             Editorline.Calculate();
                             Lines.Add(Editorline);
@@ -181,7 +238,7 @@ namespace LineRider
 
                         }
                         break;
-                    
+
                     case EngineStates.Load:
                         Load.Enabled = false;
                         Save.Enabled = false;
@@ -233,7 +290,7 @@ namespace LineRider
                         double y_speed = Rider.Speed * Math.Sin(Rider.Angle / 360 * 2 * Math.PI) - 1;
                         double x_speed = Rider.Speed * Math.Cos(Rider.Angle / 360 * 2 * Math.PI);
                         Rider.Speed = Math.Sqrt((y_speed * y_speed) + (x_speed * x_speed));
-                        
+
                         if (Rider.Speed > MAX_SPEED)
                         {
                             double factor = MAX_SPEED / Rider.Speed;
@@ -241,7 +298,7 @@ namespace LineRider
                             x_speed = x_speed * factor;
                             Rider.Speed = MAX_SPEED;
                         }
-                        
+
                         if (Rider.Speed == 0)
                         {
                             Rider.Angle = 270;
@@ -391,10 +448,10 @@ namespace LineRider
                     #region Geschwindigkeitsänderung bei neuem Kontakt mit Linien
 
                     // prüfen, ob sich kontaktierte linie geändert hat
-                    if(Contacted_Old != Rider.Contacted)
+                    if (Contacted_Old != Rider.Contacted)
                     {
                         // kontaktierte linie hat sich verändert, nullprüfung?
-                        if(Rider.Contacted != null)
+                        if (Rider.Contacted != null)
                         {
                             // linienwechsel, oder Fall auf linie, bei freiem fall auf linie, speed verkleinern
                             if (Contacted_Old == null)
@@ -425,7 +482,7 @@ namespace LineRider
                         // Kontaktierte Linie rot färben
                         Rider.Contacted.Color = Color.Red;
                     }
-                    
+
                     // Alle nicht kontaktierten Linien schwarz färben
                     Lines.ForEach(x =>
                     {
@@ -479,10 +536,10 @@ namespace LineRider
                 f_handle.Clear(Color.Honeydew);
 
                 // Linien zeichnen
-                Lines.ForEach(x=>x.Draw(f_handle, Offset, Origin));
+                Lines.ForEach(x => x.Draw(f_handle, Offset, Origin));
 
                 // Editorlinie zeichnen
-                if(flag_linestart)
+                if (flag_linestart)
                 {
                     Editorline.Draw(f_handle, Offset, Origin);
                 }
@@ -497,6 +554,7 @@ namespace LineRider
                 Rider.Draw(f_handle, Offset, Origin);
 
                 // Spielzeitzähler 
+                f_handle.FillRectangle(Time_rect, 5f, 557f, 150f, 34f);
                 f_handle.DrawString(Playtime.ToString("hh\\:mm\\:ss"), Time_f, Time_b, 10f, 556f);
 
                 // Menu
@@ -510,15 +568,20 @@ namespace LineRider
                 #region Nachrichtenverarbeitung
 
                 // Nachrichtenpostfach abarbeiten
-                while(Messages.Count > 0) // Anzahl der Nachrichten wird gezählt
+                while (Messages.IsEmpty == false) // Anzahl der Nachrichten wird gezählt
                 {
                     // Nachricht aus Postfach holen
-                    UI_Message Message = Messages.Dequeue();
+                    UI_Message Message;
+
+                    if (Messages.TryDequeue(out Message) == false)
+                    {
+                        continue;
+                    }
 
                     // Schauen, welcher Button geklickt wurde
                     GameButtons.ForEach(x => x.Handle_UI(Message));
 
-                    if(Play.Clicked)
+                    if (Play.Clicked)
                     {
                         if (State != EngineStates.Run)
                         {
@@ -567,7 +630,7 @@ namespace LineRider
                             {
                                 if (Save.Clicked)
                                 {
-                                    if(State != EngineStates.Save)
+                                    if (State != EngineStates.Save)
                                     {
                                         State = EngineStates.Save;
                                         SaveGame.Invoke(this, null);
@@ -575,18 +638,18 @@ namespace LineRider
                                 }
                                 else
                                 {
-                                    
+
                                 }
                             }
                         }
                     }
 
                     // Wenn im State Editor, vom Benutzer eingegebene Punkte zu einer Linie umrechnen
-                    if((State == EngineStates.Editor)&&(Pause.Clicked == false))
+                    if ((State == EngineStates.Editor) && (Pause.Clicked == false))
                     {
                         switch (Message.Type)
                         {
-                                // Mit einem Linksklick wird der Start einer Linie markiert
+                            // Mit einem Linksklick wird der Start einer Linie markiert
                             case UI_Message.Clicktype.Left:
                                 flag_linestart = true;
                                 Editorline.Start.X = Offset.X - Origin.X + Message.Position.X;
@@ -601,7 +664,7 @@ namespace LineRider
                                 deleteLine(Shifted);
                                 break;
 
-                                // Mit dem bewegen der Maus wird der Endpunkt verschoben 
+                            // Mit dem bewegen der Maus wird der Endpunkt verschoben 
                             case UI_Message.Clicktype.Move:
                                 if (flag_linestart)
                                 {
@@ -611,7 +674,7 @@ namespace LineRider
                                 }
                                 break;
 
-                                // Mit Loslassen der Linkstaste wird der Enpunkt der Linie gesetzt
+                            // Mit Loslassen der Linkstaste wird der Enpunkt der Linie gesetzt
                             case UI_Message.Clicktype.Released:
                                 if (flag_linestart)
                                 {
@@ -826,7 +889,6 @@ namespace LineRider
             }
         }
 
-
         /// <summary>
         /// Prüfen ob Punkt im Bereich des rechteckigen Bereiches der Linie ist
         /// </summary>
@@ -927,6 +989,10 @@ namespace LineRider
             Process.Set(); // Prozessflag setzen
         }
 
+        /// <summary>
+        /// Start the rendering thread
+        /// </summary>
+        /// <param name="graphics"></param>
         public void Start(Graphics graphics)
         {
             Stop();
@@ -936,6 +1002,11 @@ namespace LineRider
             Render.Start();
         }
 
+        /// <summary>
+        /// Move the origin point with the arrow keys
+        /// </summary>
+        /// <param name="keys">Arrow keys</param>
+        /// <param name="p">Moving size</param>
         public void MoveOrigin(Keys keys, int p)
         {
             if (State == EngineStates.Editor)

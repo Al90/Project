@@ -118,6 +118,9 @@ namespace LineRider
                         {
                             Selected = false;
                         }
+
+                        Clicked = false;
+
                         break;
                     default:
                         break;
